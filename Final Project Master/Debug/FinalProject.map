@@ -1,0 +1,325 @@
+******************************************************************************
+                  TI ARM Linker PC v18.1.3                     
+******************************************************************************
+>> Linked Sun Oct 28 00:05:14 2018
+
+OUTPUT FILE NAME:   <FinalProject.out>
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00001165
+
+
+MEMORY CONFIGURATION
+
+         name            origin    length      used     unused   attr    fill
+----------------------  --------  ---------  --------  --------  ----  --------
+  MAIN                  00000000   00040000  00001372  0003ec8e  R  X
+  INFO                  00200000   00004000  00000000  00004000  R  X
+  SRAM_CODE             01000000   00010000  00000000  00010000  RW X
+  SRAM_DATA             20000000   00010000  00000a54  0000f5ac  RW  
+
+
+SEGMENT ALLOCATION MAP
+
+run origin  load origin   length   init length attrs members
+----------  ----------- ---------- ----------- ----- -------
+00000000    00000000    00001378   00001378    r-x
+  00000000    00000000    00000140   00000140    r-- .intvecs
+  00000140    00000140    000011d2   000011d2    r-x .text
+  00001318    00001318    00000060   00000060    r-- .cinit
+20000000    20000000    00000854   00000000    rw-
+  20000000    20000000    00000800   00000000    rw- .sysmem
+  20000800    20000800    0000004c   00000000    rw- .data
+  2000084c    2000084c    00000008   00000000    rw- .bss
+2000fe00    2000fe00    00000200   00000000    rw-
+  2000fe00    2000fe00    00000200   00000000    rw- .stack
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.intvecs   0    00000000    00000140     
+                  00000000    00000140     startup_msp432p401r_ccs.obj (.intvecs:retain)
+
+.text      0    00000140    000011d2     
+                  00000140    00000328     system_msp432p401r.obj (.text)
+                  00000468    000001b6     rtsv7M4_T_le_v4SPD16_eabi.lib : fd_add_t2.asm.obj (.text)
+                  0000061e    00000002     --HOLE-- [fill = 0]
+                  00000620    0000014c     BuzzerAndClock.obj (.text)
+                  0000076c    00000136     rtsv7M4_T_le_v4SPD16_eabi.lib : fd_div_t2.asm.obj (.text)
+                  000008a2    00000002     --HOLE-- [fill = 0]
+                  000008a4    00000114     FinalProject.obj (.text)
+                  000009b8    00000104     msp432p4xx_driverlib.lib : cs.o (.text:CS_getDCOFrequency)
+                  00000abc    000000fc     rtsv7M4_T_le_v4SPD16_eabi.lib : fd_mul_t2.asm.obj (.text)
+                  00000bb8    000000dc     Backlight.obj (.text)
+                  00000c94    0000009c     msp432p4xx_driverlib.lib : cs.o (.text:CS_startHFXTWithTimeout)
+                  00000d30    0000009c                              : cs.o (.text:_CSComputeCLKFrequency)
+                  00000dcc    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
+                  00000e68    00000070     msp432p4xx_driverlib.lib : cs.o (.text:_CSGetHFXTFrequency)
+                  00000ed8    0000006e     rtsv7M4_T_le_v4SPD16_eabi.lib : fd_tos_t2.asm.obj (.text)
+                  00000f46    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  00000fae    00000002     --HOLE-- [fill = 0]
+                  00000fb0    00000050     msp432p4xx_driverlib.lib : sysctl.o (.text:SysCtl_getTLVInfo)
+                  00001000    0000004c                              : cs.o (.text:_CSGetDOCFrequency)
+                  0000104c    00000048                              : cs.o (.text:_CSGetDividerValue)
+                  00001094    00000048     rtsv7M4_T_le_v4SPD16_eabi.lib : fd_toi_t2.asm.obj (.text)
+                  000010dc    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
+                  00001120    00000044                                   : fd_tou_t2.asm.obj (.text)
+                  00001164    00000038                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
+                  0000119c    00000038                                   : fs_tod_t2.asm.obj (.text)
+                  000011d4    0000002e                                   : i_tofd_t2.asm.obj (.text)
+                  00001202    00000002     --HOLE-- [fill = 0]
+                  00001204    00000024     msp432p4xx_driverlib.lib : cs.o (.text:CS_clearInterruptFlag)
+                  00001228    00000020     rtsv7M4_T_le_v4SPD16_eabi.lib : u_tofd_t2.asm.obj (.text)
+                  00001248    00000018     msp432p4xx_driverlib.lib : cs.o (.text:CS_getACLK)
+                  00001260    00000018                              : cs.o (.text:CS_getMCLK)
+                  00001278    00000018                              : cs.o (.text:CS_getSMCLK)
+                  00001290    00000014                              : cs.o (.text:CS_setExternalClockSourceFrequency)
+                  000012a4    00000012     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
+                  000012b6    00000012     startup_msp432p401r_ccs.obj (.text)
+                  000012c8    00000010     msp432p4xx_driverlib.lib : sysctl.o (.text:SysCtl_disableNMISource)
+                  000012d8    00000010                              : sysctl.o (.text:SysCtl_enableNMISource)
+                  000012e8    0000000e     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  000012f6    00000002     --HOLE-- [fill = 0]
+                  000012f8    0000000c     msp432p4xx_driverlib.lib : sysctl.o (.text:SysCtl_getNMISourceStatus)
+                  00001304    00000006                              : cs.o (.text:CS_startHFXT)
+                  0000130a    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  0000130e    00000004                                   : exit.c.obj (.text:abort:abort)
+
+.cinit     0    00001318    00000060     
+                  00001318    00000035     (.cinit..data.load) [load image, compression = lzss]
+                  0000134d    00000003     --HOLE-- [fill = 0]
+                  00001350    0000000c     (__TI_handler_table)
+                  0000135c    00000004     --HOLE-- [fill = 0]
+                  00001360    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00001368    00000010     (__TI_cinit_table)
+
+.init_array 
+*          0    00000000    00000000     UNINITIALIZED
+
+.sysmem    0    20000000    00000800     UNINITIALIZED
+                  20000000    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.c.obj (.sysmem)
+                  20000008    000007f8     --HOLE--
+
+.data      0    20000800    0000004c     UNINITIALIZED
+                  20000800    00000018     FinalProject.obj (.data:BacklightpwmConfig)
+                  20000818    00000018     BuzzerAndClock.obj (.data:pwmConfigA0)
+                  20000830    00000018     BuzzerAndClock.obj (.data:pwmConfigA3)
+                  20000848    00000004     system_msp432p401r.obj (.data)
+
+.bss       0    2000084c    00000008     UNINITIALIZED
+                  2000084c    00000004     (.common:hfxtFreq)
+                  20000850    00000004     (.common:lfxtFreq)
+
+.stack     0    2000fe00    00000200     UNINITIALIZED
+                  2000fe00    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
+                  2000fe04    000001fc     --HOLE--
+
+MODULE SUMMARY
+
+       Module                        code   ro data   rw data
+       ------                        ----   -------   -------
+    .\
+       system_msp432p401r.obj        808    0         4      
+       BuzzerAndClock.obj            332    0         48     
+       startup_msp432p401r_ccs.obj   18     320       0      
+       FinalProject.obj              276    0         24     
+       Backlight.obj                 220    0         0      
+    +--+-----------------------------+------+---------+---------+
+       Total:                        1654   320       76     
+                                                             
+    C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/ccs/msp432p4xx_driverlib.lib
+       cs.o                          966    0         8      
+       sysctl.o                      124    0         0      
+    +--+-----------------------------+------+---------+---------+
+       Total:                        1090   0         8      
+                                                             
+    C:\ti\ccsv8\tools\compiler\ti-cgt-arm_18.1.3.LTS\lib\rtsv7M4_T_le_v4SPD16_eabi.lib
+       fd_add_t2.asm.obj             438    0         0      
+       fd_div_t2.asm.obj             310    0         0      
+       fd_mul_t2.asm.obj             252    0         0      
+       memcpy_t2.asm.obj             156    0         0      
+       fd_tos_t2.asm.obj             110    0         0      
+       copy_decompress_lzss.c.obj    104    0         0      
+       fd_toi_t2.asm.obj             72     0         0      
+       autoinit.c.obj                68     0         0      
+       fd_tou_t2.asm.obj             68     0         0      
+       boot_cortex_m.c.obj           56     0         0      
+       fs_tod_t2.asm.obj             56     0         0      
+       i_tofd_t2.asm.obj             46     0         0      
+       u_tofd_t2.asm.obj             32     0         0      
+       copy_zero_init.c.obj          18     0         0      
+       copy_decompress_none.c.obj    14     0         0      
+       exit.c.obj                    4      0         0      
+       pre_init.c.obj                4      0         0      
+    +--+-----------------------------+------+---------+---------+
+       Total:                        1808   0         0      
+                                                             
+       Heap:                         0      0         2048   
+       Stack:                        0      0         512    
+       Linker Generated:             0      89        0      
+    +--+-----------------------------+------+---------+---------+
+       Grand Total:                  4552   409       2644   
+
+
+LINKER GENERATED COPY TABLES
+
+__TI_cinit_table @ 00001368 records: 2, size/record: 8, table size: 16
+	.data: load addr=00001318, load size=00000035 bytes, run addr=20000800, run size=0000004c bytes, compression=lzss
+	.bss: load addr=00001360, load size=00000008 bytes, run addr=2000084c, run size=00000008 bytes, compression=zero_init
+
+
+LINKER GENERATED HANDLER TABLE
+
+__TI_handler_table @ 00001350 records: 3, size/record: 4, table size: 12
+	index: 0, handler: __TI_decompress_lzss
+	index: 1, handler: __TI_decompress_none
+	index: 2, handler: __TI_zero_init
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address   name                              
+-------   ----                              
+000008bd  ADC14_IRQHandler                  
+20000800  BacklightpwmConfig                
+0000130f  C$$EXIT                           
+00001205  CS_clearInterruptFlag             
+00001249  CS_getACLK                        
+000009b9  CS_getDCOFrequency                
+00001261  CS_getMCLK                        
+00001279  CS_getSMCLK                       
+00001291  CS_setExternalClockSourceFrequency
+00001305  CS_startHFXT                      
+00000c95  CS_startHFXTWithTimeout           
+00000bb9  InitBacklight                     
+00000621  StartBuzzer                       
+00000689  StopBuzzer                        
+000012c9  SysCtl_disableNMISource           
+000012d9  SysCtl_enableNMISource            
+000012f9  SysCtl_getNMISourceStatus         
+00000fb1  SysCtl_getTLVInfo                 
+00000975  SysTick_Handler                   
+20000848  SystemCoreClock                   
+00000141  SystemCoreClockUpdate             
+000003b5  SystemInit                        
+4000480c  WDTCTL_SYM                        
+20010000  __STACK_END                       
+00000200  __STACK_SIZE                      
+00000800  __SYSMEM_SIZE                     
+00001368  __TI_CINIT_Base                   
+00001378  __TI_CINIT_Limit                  
+00001350  __TI_Handler_Table_Base           
+0000135c  __TI_Handler_Table_Limit          
+000010dd  __TI_auto_init_nobinit_nopinit    
+00000f47  __TI_decompress_lzss              
+000012e9  __TI_decompress_none              
+ffffffff  __TI_pprof_out_hndl               
+ffffffff  __TI_prof_data_size               
+ffffffff  __TI_prof_data_start              
+00000000  __TI_static_base__                
+000012a5  __TI_zero_init_nomemset           
+00000ed9  __aeabi_d2f                       
+00001095  __aeabi_d2iz                      
+00001121  __aeabi_d2uiz                     
+00000473  __aeabi_dadd                      
+0000076d  __aeabi_ddiv                      
+00000abd  __aeabi_dmul                      
+00000469  __aeabi_dsub                      
+0000119d  __aeabi_f2d                       
+000011d5  __aeabi_i2d                       
+00000dcd  __aeabi_memcpy                    
+00000dcd  __aeabi_memcpy4                   
+00000dcd  __aeabi_memcpy8                   
+00001229  __aeabi_ui2d                      
+ffffffff  __binit__                         
+ffffffff  __c_args__                        
+UNDEFED   __mpu_init                        
+2000fe00  __stack                           
+00001165  _c_int00_noargs                   
+20000000  _sys_memory                       
+UNDEFED   _system_post_cinit                
+0000130b  _system_pre_init                  
+0000130f  abort                             
+ffffffff  binit                             
+000006a7  clockInit48MHzXTL                 
+00000000  interruptVectors                  
+000008a5  main                              
+00000dcd  memcpy                            
+20000818  pwmConfigA0                       
+20000830  pwmConfigA3                       
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address   name                              
+-------   ----                              
+00000000  __TI_static_base__                
+00000000  interruptVectors                  
+00000141  SystemCoreClockUpdate             
+00000200  __STACK_SIZE                      
+000003b5  SystemInit                        
+00000469  __aeabi_dsub                      
+00000473  __aeabi_dadd                      
+00000621  StartBuzzer                       
+00000689  StopBuzzer                        
+000006a7  clockInit48MHzXTL                 
+0000076d  __aeabi_ddiv                      
+00000800  __SYSMEM_SIZE                     
+000008a5  main                              
+000008bd  ADC14_IRQHandler                  
+00000975  SysTick_Handler                   
+000009b9  CS_getDCOFrequency                
+00000abd  __aeabi_dmul                      
+00000bb9  InitBacklight                     
+00000c95  CS_startHFXTWithTimeout           
+00000dcd  __aeabi_memcpy                    
+00000dcd  __aeabi_memcpy4                   
+00000dcd  __aeabi_memcpy8                   
+00000dcd  memcpy                            
+00000ed9  __aeabi_d2f                       
+00000f47  __TI_decompress_lzss              
+00000fb1  SysCtl_getTLVInfo                 
+00001095  __aeabi_d2iz                      
+000010dd  __TI_auto_init_nobinit_nopinit    
+00001121  __aeabi_d2uiz                     
+00001165  _c_int00_noargs                   
+0000119d  __aeabi_f2d                       
+000011d5  __aeabi_i2d                       
+00001205  CS_clearInterruptFlag             
+00001229  __aeabi_ui2d                      
+00001249  CS_getACLK                        
+00001261  CS_getMCLK                        
+00001279  CS_getSMCLK                       
+00001291  CS_setExternalClockSourceFrequency
+000012a5  __TI_zero_init_nomemset           
+000012c9  SysCtl_disableNMISource           
+000012d9  SysCtl_enableNMISource            
+000012e9  __TI_decompress_none              
+000012f9  SysCtl_getNMISourceStatus         
+00001305  CS_startHFXT                      
+0000130b  _system_pre_init                  
+0000130f  C$$EXIT                           
+0000130f  abort                             
+00001350  __TI_Handler_Table_Base           
+0000135c  __TI_Handler_Table_Limit          
+00001368  __TI_CINIT_Base                   
+00001378  __TI_CINIT_Limit                  
+20000000  _sys_memory                       
+20000800  BacklightpwmConfig                
+20000818  pwmConfigA0                       
+20000830  pwmConfigA3                       
+20000848  SystemCoreClock                   
+2000fe00  __stack                           
+20010000  __STACK_END                       
+4000480c  WDTCTL_SYM                        
+ffffffff  __TI_pprof_out_hndl               
+ffffffff  __TI_prof_data_size               
+ffffffff  __TI_prof_data_start              
+ffffffff  __binit__                         
+ffffffff  __c_args__                        
+ffffffff  binit                             
+UNDEFED   __mpu_init                        
+UNDEFED   _system_post_cinit                
+
+[67 symbols]
