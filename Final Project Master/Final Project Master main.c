@@ -286,7 +286,10 @@ int main(void) {
     }
 }
 
+/* Timer32 ISR */
+void T32_INT1_IRQHandler(void){
 
+}
 
 /* Interrupt Handler for I2C Module on Port 1 */
 void EUSCIB0_IRQHandler(void) {

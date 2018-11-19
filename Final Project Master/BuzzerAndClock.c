@@ -29,6 +29,16 @@ Timer_A_PWMConfig pwmConfigA3 =
  4
 };
 
+void InitTimer32(uint32_t period){
+
+    MAP_Timer32_initModule(TIMER32_BASE, TIMER32_PRESCALER_16, TIMER32_32BIT,
+                           TIMER32_PERIODIC_MODE);
+    MAP_Timer32_setCount(TIMER32_BASE,period);
+    MAP_Interrupt_enableInterrupt(INT_T32_INT1);
+
+    MAP_Timer32_enableInterrupt(TIMER32_BASE);
+    MAP_Timer32_startTimer(TIMER32_BASE, false);
+}
 void StartBuzzer(uint32_t Freq){
 
 

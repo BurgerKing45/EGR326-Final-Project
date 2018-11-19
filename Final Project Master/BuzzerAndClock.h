@@ -20,3 +20,8 @@ void StopBuzzer(void);
  * ACLK = 32678Hz. No idea why, but I'm using it.
  */
 void clockInit48MHzXTL(void);
+
+/*Sets the interrupt to end all interrupts.
+ * 3MHz clock source.
+ */
+void InitTimer32(uint32_t period);
