@@ -57,7 +57,7 @@ Final\ Project\ Slave\ main.obj: ../Keypad.h
 Final\ Project\ Slave\ main.obj: ../ST7735.h
 Final\ Project\ Slave\ main.obj: ../Backlight.h
 Final\ Project\ Slave\ main.obj: ../BuzzerAndClock.h
-Final\ Project\ Slave\ main.obj: ../I2C_Slave.h
+Final\ Project\ Slave\ main.obj: ../UART.h
 
 ../Final\ Project\ Slave\ main.c: 
 C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/driverlib.h: 
@@ -116,4 +116,4 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdarg.h:
 ../ST7735.h: 
 ../Backlight.h: 
 ../BuzzerAndClock.h: 
-../I2C_Slave.h: 
+../UART.h: 

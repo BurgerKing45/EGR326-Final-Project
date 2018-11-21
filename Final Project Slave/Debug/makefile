@@ -14,10 +14,10 @@ ORDERED_OBJS += \
 "./BuzzerAndClock.obj" \
 "./Final Project Slave main.obj" \
 "./Flash.obj" \
-"./I2C_Slave.obj" \
 "./Keypad.obj" \
 "./RTC.obj" \
 "./ST7735.obj" \
+"./UART.obj" \
 "./image.obj" \
 "./startup_msp432p401r_ccs.obj" \
 "./system_msp432p401r.obj" \
@@ -167,8 +167,8 @@ Final\ Project\ Slave.bin: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Backlight.obj" "BuzzerAndClock.obj" "Final Project Slave main.obj" "Flash.obj" "I2C_Slave.obj" "Keypad.obj" "RTC.obj" "ST7735.obj" "image.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
-	-$(RM) "Backlight.d" "BuzzerAndClock.d" "Final Project Slave main.d" "Flash.d" "I2C_Slave.d" "Keypad.d" "RTC.d" "ST7735.d" "image.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
+	-$(RM) "Backlight.obj" "BuzzerAndClock.obj" "Final Project Slave main.obj" "Flash.obj" "Keypad.obj" "RTC.obj" "ST7735.obj" "UART.obj" "image.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
+	-$(RM) "Backlight.d" "BuzzerAndClock.d" "Final Project Slave main.d" "Flash.d" "Keypad.d" "RTC.d" "ST7735.d" "UART.d" "image.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

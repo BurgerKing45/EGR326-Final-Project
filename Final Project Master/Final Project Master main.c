@@ -15,16 +15,19 @@
 #include <string.h>
 #include <stdio.h>
 
+
 /*Custom Libraries */
 #include "RTC.h"
 #include "Keypad.h"
 #include "ST7735.h"
 #include "Backlight.h"
 #include "BuzzerAndClock.h"
-#include "I2C_Master.h"
 #include "Stepper.h"
 #include "Flash.h"
 #include "LCD.h"
+#include "UART.h"
+#include "NeedForSpeed.h"
+#include "Prox.h"
 
 //Macros
 #define Startup   0
@@ -36,12 +39,21 @@
 
 /* Global Variables */
 uint8_t state = 0;
-uint16_t speed = 0;
 uint8_t MenuFlag = 0;
 
 uint8_t rcv_byte;
 uint8_t StateChanged = 0;
 uint8_t rcvflag;
+
+//Speed related
+uint16_t speed_count = 0;
+uint16_t speed = 0;
+
+//Prox Related
+uint32_t meas1 = 0;
+uint32_t meas2 = 0;
+uint8_t ProxFlag = 0;
+uint8_t ProxMeasured = 0;
 
 
 /* variables for user keypad input */
@@ -97,14 +109,28 @@ int main(void) {
             clockInit48MHzXTL();
             ST7735_InitR(INITR_REDTAB);
             initRTC();
-            initMasterI2C();
+            InitUART();
             InitBacklight();     // check for clock issues now that we are running at 48 MHz
             InitStepper();
+            InitProx();
 
+
+
+            //Init Display
+            ClearDisplay();
+
+            InitTimer32(3000000);
+            InitHall();
+            InitSysTick(12000000);
+
+
+            // MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN0);
 
             // StopBuzzer();  // stop buzzer
 
             MAP_Interrupt_enableMaster();
+
+            //MAP_UART_transmitData(EUSCI_A1_BASE, 1);
 
             state = 1;   // go to Idle State
             break;
@@ -115,12 +141,11 @@ int main(void) {
             StateChanged = 0;
 
             //Idle Display
-            ClearDisplay();
+            //ClearLowerDisplay();
             IdleDisplay();
-            UpdateDisplay(25);
 
             //Request keypad info from slave
-            masterRecieveSingleByte();
+
 
             while(!StateChanged){
 
@@ -128,6 +153,8 @@ int main(void) {
                     state = Menu;
                     StateChanged = 1;
                     rcv_byte = 0;
+                    MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+
 
                 }
 
@@ -141,11 +168,10 @@ int main(void) {
             StateChanged = 0;
 
             //Clear Display and print menu
-            ClearDisplay();
-            UpdateDisplay(25);
+            //ClearLowerDisplay();
             MenuDisplay();
 
-            masterRecieveSingleByte();
+
 
             while(!StateChanged){
 
@@ -181,38 +207,37 @@ int main(void) {
             StateChanged = 0;
 
             //Time Enter Display
-            ClearDisplay();
-            UpdateDisplay(25);
+            //ClearLowerDisplay();
 
             promptTime();
 
             writeToRTC();
 
             user_entry[0] = 'x';
-               user_entry[1] = 'x';
-               user_entry[3] = 'x';
-               user_entry[4] = 'x';
-               user_entry[6] = 'x';
-               user_entry[7] = 'x';
-               user_entry[9] = 'x';
-               user_entry[10] = 'x';
-               user_entry[12] = 'x';
-               user_entry[13] = 'x';
-               user_entry[17] = 'x';
-               user_entry[18] = 'x';
+            user_entry[1] = 'x';
+            user_entry[3] = 'x';
+            user_entry[4] = 'x';
+            user_entry[6] = 'x';
+            user_entry[7] = 'x';
+            user_entry[9] = 'x';
+            user_entry[10] = 'x';
+            user_entry[12] = 'x';
+            user_entry[13] = 'x';
+            user_entry[17] = 'x';
+            user_entry[18] = 'x';
 
-               m_seconds[0] = NULL;
-               m_seconds[1] = NULL;
-               m_minutes[0] = NULL;
-               m_minutes[1] = NULL;
-               m_hours[0] = NULL;
-               m_hours[1] = NULL;
-               m_date[0] = NULL;
-               m_date[1] = NULL;
-               m_month[0] = NULL;
-               m_month[1] = NULL;
-               m_year[0] = NULL;
-               m_year[1] = NULL;
+            m_seconds[0] = NULL;
+            m_seconds[1] = NULL;
+            m_minutes[0] = NULL;
+            m_minutes[1] = NULL;
+            m_hours[0] = NULL;
+            m_hours[1] = NULL;
+            m_date[0] = NULL;
+            m_date[1] = NULL;
+            m_month[0] = NULL;
+            m_month[1] = NULL;
+            m_year[0] = NULL;
+            m_year[1] = NULL;
 
             state = Idle;
 
@@ -221,10 +246,7 @@ int main(void) {
         case AlarmLog :
 
             StateChanged = 0;
-
-
-            ClearDisplay();
-            UpdateDisplay(25);
+            //ClearLowerDisplay();
             //Testing
             WriteToFlash("0201120181118", 1);
             WriteToFlash("0001120181118", 1);
@@ -252,10 +274,7 @@ int main(void) {
         case SpeedLog :
 
             StateChanged = 0;
-
-            ClearDisplay();
-            UpdateDisplay(25);
-
+            // ClearLowerDisplay();
             //Testing
             WriteToFlash("0001120181118", 2);
             WriteToFlash("0101120181118", 2);
@@ -286,32 +305,88 @@ int main(void) {
     }
 }
 
+void SysTick_Handler(void)
+{
+    speed = Convert_Speed(speed_count);
+    speed_count = 0;
+    InitSysTick(12000000);
+}
+
 /* Timer32 ISR */
 void T32_INT1_IRQHandler(void){
+    MAP_Timer32_clearInterruptFlag(TIMER32_BASE);
+    PulseProx();
+    UpdateDisplay(speed);
+    Update_Speedometer(speed);
+
+    if(speed >= 85){
+        MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+    }
+    else{
+        MAP_UART_transmitData(EUSCI_A1_BASE, 2);
+    }
+    MAP_ADC14_toggleConversionTrigger();
+    //while(!ProxMeasured);
+    ProxFlag = CheckProx(meas1, meas2);
+    ProxMeasured = 0;
+
 
 }
 
-/* Interrupt Handler for I2C Module on Port 1 */
-void EUSCIB0_IRQHandler(void) {
-    uint32_t status = I2C_getEnabledInterruptStatus(EUSCI_B0_BASE);
+/* interrupt handler for Timer A0 */
+void TA0_N_IRQHandler(void){
+    int rising = 0;
+    if (TIMER_A0->CCTL[1] & BIT0) { // Timer A0.1 was the cause. This is setup as a capture
+        Timer_A_clearCaptureCompareInterrupt(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1);  // clear timer_A interrupt flag
+
+        if(P2IN & BIT4) rising=1; else rising=0; // check for rising or falling edge on input
+        if(rising) {
+            //meas1 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1); // read timer_A value
+
+            MAP_Timer_A_stopTimer(TIMER_A0_BASE);
+
+            TA0R = 0;
+            /* start Timer A0 */
+            Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);
 
 
-    I2C_clearInterruptFlag(EUSCI_B0_BASE, status);
-
-    if (status & EUSCI_B_I2C_TRANSMIT_INTERRUPT0) {
-        I2C_disableInterrupt(EUSCI_B0_BASE, EUSCI_B_I2C_TRANSMIT_INTERRUPT0);
-    }
-
-    if (status & EUSCI_B_I2C_RECEIVE_INTERRUPT0) {
-        rcv_byte = MAP_I2C_masterReceiveSingle(EUSCI_B0_BASE);
-        rcvflag = 1;
-
-        //        else if(rcv_byte == 50){
-        //            MAP_GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN1);
-        //            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
-        //        }
+        }
+        else {
+            meas2 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1); // read timer_A value
+            ProxMeasured = 1;
+        }
     }
 }
+/* GPIO ISR */
+void PORT3_IRQHandler(void)
+{
+    uint16_t status;
+
+    status = MAP_GPIO_getEnabledInterruptStatus(GPIO_PORT_P3);
+    MAP_GPIO_clearInterruptFlag(GPIO_PORT_P3, status);
+
+    if(status & GPIO_PIN7)
+    {
+        speed_count = speed_count + 1;
+    }
+
+
+}
+/* EUSCI A1 UART ISR - Echoes data back to PC host */
+void EUSCIA1_IRQHandler(void)
+{
+    uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A1_BASE);
+
+    MAP_UART_clearInterruptFlag(EUSCI_A1_BASE, status);
+
+    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+    {
+        rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
+
+    }
+
+}
+
 
 
 
@@ -352,7 +427,8 @@ void ADC14_IRQHandler(void)
 
         Duty_Cycle = 0.0091 * cur_ADCResult + 4.6514;
 
-        BacklightpwmConfig.dutyCycle = 3000 * Duty_Cycle *.01;
+        //Mess with this to change brightness
+        BacklightpwmConfig.dutyCycle = 6000 * Duty_Cycle *.01;
         MAP_Timer_A_generatePWM(TIMER_A2_BASE, &BacklightpwmConfig);
         normalized_ADCRes = (cur_ADCResult * 3.3) / 16384;    //Normalize that result given Vref = 3.3V and 14 bit ADC
 
@@ -361,13 +437,6 @@ void ADC14_IRQHandler(void)
 
 }
 
-void SysTick_Handler(void)
-{
-    //Toggle the conversion trigger every 0.5s using the SysTick Handler.
-    //So a ADC conversion only occurs every 0.5 seconds
-    ///MAP_ADC14_toggleConversionTrigger();
-    //printf("%f \n", cur_ADCResult);
-}
 
 
 /* prompts user to enter time and date info */
@@ -389,7 +458,7 @@ void promptSeconds(void) {
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
-        masterRecieveSingleByte();
+
         while(m_seconds[0] == NULL){
             m_seconds[0] = rcv_byte;
         };
@@ -398,7 +467,7 @@ void promptSeconds(void) {
 
         rcv_byte = NULL;
 
-        masterRecieveSingleByte();
+
         while(m_seconds[1] == NULL){
             m_seconds[1] = rcv_byte;
         };
@@ -428,7 +497,7 @@ void promptMinutes(void) {
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
-        masterRecieveSingleByte();
+
         while(m_minutes[0] == NULL){
             m_minutes[0] = rcv_byte;
         };
@@ -437,7 +506,7 @@ void promptMinutes(void) {
 
         rcv_byte = NULL;
 
-        masterRecieveSingleByte();
+
         while(m_minutes[1] == NULL){
             m_minutes[1] = rcv_byte;
         };
@@ -467,7 +536,7 @@ void promptHours(void) {
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
-        masterRecieveSingleByte();
+
         while(m_hours[0] == NULL){
             m_hours[0] = rcv_byte;
         };
@@ -476,7 +545,7 @@ void promptHours(void) {
 
         rcv_byte = NULL;
 
-        masterRecieveSingleByte();
+
         while(m_hours[1] == NULL){
             m_hours[1] = rcv_byte;
         };
@@ -507,7 +576,7 @@ void promptDate(void) {
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
-        masterRecieveSingleByte();
+
         while(m_date[0] == NULL){
             m_date[0] = rcv_byte;
         };
@@ -516,7 +585,7 @@ void promptDate(void) {
 
         rcv_byte = NULL;
 
-        masterRecieveSingleByte();
+
         while(m_date[1] == NULL){
             m_date[1] = rcv_byte;
         };
@@ -547,7 +616,7 @@ void promptMonth(void) {
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
-        masterRecieveSingleByte();
+
         while(m_month[0] == NULL){
             m_month[0] = rcv_byte;
         };
@@ -556,7 +625,7 @@ void promptMonth(void) {
 
         rcv_byte = NULL;
 
-        masterRecieveSingleByte();
+
         while(m_month[1] == NULL){
             m_month[1] = rcv_byte;
         };
@@ -587,7 +656,7 @@ void promptYear(void) {
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
-        masterRecieveSingleByte();
+
         while(m_year[0] == NULL){
             m_year[0] = rcv_byte;
         };
@@ -596,7 +665,7 @@ void promptYear(void) {
 
         rcv_byte = NULL;
 
-        masterRecieveSingleByte();
+
         while(m_year[1] == NULL){
             m_year[1] = rcv_byte;
         };
@@ -619,23 +688,23 @@ void promptYear(void) {
     }
 }
 
-/* prompt user to enter day */
-void promptDay(void) {
-    if (day[0] == NULL) {
-        printf("please enter day (1-7, Sunday is 1) \n");
-
-        day[0] = getKey();
-
-        if (day[0] < '1' || day[0] > '7') {
-            printf("invalid number \n");
-            day[0] = NULL;
-            promptDay();
-        }
-        else {
-            printf("day enter: %s \n", day);
-            return;
-        }
-    }
-}
+///* prompt user to enter day */
+//void promptDay(void) {
+//    if (day[0] == NULL) {
+//        printf("please enter day (1-7, Sunday is 1) \n");
+//
+//        day[0] = getKey();
+//
+//        if (day[0] < '1' || day[0] > '7') {
+//            printf("invalid number \n");
+//            day[0] = NULL;
+//            promptDay();
+//        }
+//        else {
+//            printf("day enter: %s \n", day);
+//            return;
+//        }
+//    }
+//}
 
 

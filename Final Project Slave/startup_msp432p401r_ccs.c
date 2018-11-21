@@ -55,7 +55,7 @@ extern unsigned long __STACK_END;
 
 
 /* External declarations for the interrupt handlers used by the application. */
-extern void EUSCIB0_IRQHandler(void);
+extern void EUSCIA1_IRQHandler(void);
 /* To be added by user */
 
 
@@ -100,10 +100,10 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* TA3_0 ISR                 */
     defaultISR,                             /* TA3_N ISR                 */
     defaultISR,                             /* EUSCIA0 ISR               */
-    defaultISR,                             /* EUSCIA1 ISR               */
+    EUSCIA1_IRQHandler,                             /* EUSCIA1 ISR               */
     defaultISR,                             /* EUSCIA2 ISR               */
     defaultISR,                             /* EUSCIA3 ISR               */
-    EUSCIB0_IRQHandler,                             /* EUSCIB0 ISR               */
+    defaultISR,                             /* EUSCIB0 ISR               */
     defaultISR,                             /* EUSCIB1 ISR               */
     defaultISR,                             /* EUSCIB2 ISR               */
     defaultISR,                             /* EUSCIB3 ISR               */

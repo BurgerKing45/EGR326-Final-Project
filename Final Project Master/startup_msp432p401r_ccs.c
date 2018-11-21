@@ -59,8 +59,10 @@ extern unsigned long __STACK_END;
 /* To be added by user */
 extern void ADC14_IRQHandler(void);
 extern void SysTick_Handler(void);
-extern void EUSCIB0_IRQHandler(void);
 extern void T32_INT1_IRQHandler(void);
+extern void EUSCIA1_IRQHandler(void);
+extern void PORT3_IRQHandler(void);
+extern void TA0_N_IRQHandler(void);
 
 /* Interrupt vector table.  Note that the proper constructs must be placed on this to  */
 /* ensure that it ends up at physical address 0x0000.0000 or at the start of          */
@@ -95,7 +97,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* COMP0 ISR                 */
     defaultISR,                             /* COMP1 ISR                 */
     defaultISR,                             /* TA0_0 ISR                 */
-    defaultISR,                             /* TA0_N ISR                 */
+    TA0_N_IRQHandler,                             /* TA0_N ISR                 */
     defaultISR,                             /* TA1_0 ISR                 */
     defaultISR,                             /* TA1_N ISR                 */
     defaultISR,                             /* TA2_0 ISR                 */
@@ -103,10 +105,10 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* TA3_0 ISR                 */
     defaultISR,                             /* TA3_N ISR                 */
     defaultISR,                             /* EUSCIA0 ISR               */
-    defaultISR,                             /* EUSCIA1 ISR               */
+    EUSCIA1_IRQHandler,                             /* EUSCIA1 ISR               */
     defaultISR,                             /* EUSCIA2 ISR               */
     defaultISR,                             /* EUSCIA3 ISR               */
-    EUSCIB0_IRQHandler,                             /* EUSCIB0 ISR               */
+    defaultISR,                             /* EUSCIB0 ISR               */
     defaultISR,                             /* EUSCIB1 ISR               */
     defaultISR,                             /* EUSCIB2 ISR               */
     defaultISR,                             /* EUSCIB3 ISR               */
@@ -123,7 +125,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* DMA_INT0 ISR              */
     defaultISR,                             /* PORT1 ISR                 */
     defaultISR,                             /* PORT2 ISR                 */
-    defaultISR,                             /* PORT3 ISR                 */
+    PORT3_IRQHandler,                             /* PORT3 ISR                 */
     defaultISR,                             /* PORT4 ISR                 */
     defaultISR,                             /* PORT5 ISR                 */
     defaultISR,                             /* PORT6 ISR                 */

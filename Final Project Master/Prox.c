@@ -39,7 +39,7 @@ const Timer_A_CaptureModeConfig Prox_captureModeConfig =
 const Timer_A_ContinuousModeConfig Prox_continuousModeConfig =
 {
  TIMER_A_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
- TIMER_A_CLOCKSOURCE_DIVIDER_1,      // SMCLK/1 = 3 MHz
+ TIMER_A_CLOCKSOURCE_DIVIDER_1,      // SMCLK = 3 MHz
  TIMER_A_TAIE_INTERRUPT_DISABLE,     // Disable Timer ISR
  TIMER_A_SKIP_CLEAR                  // Skip Clear Counter
 };
@@ -57,14 +57,12 @@ uint8_t CheckProx(uint32_t meas1, uint32_t meas2){
     uint8_t ProxFlag;
     uint32_t time;
 
-    if(meas2 < meas1) {
-        time = meas2 + 65535 - meas1;
-    }
-    else {
-        time = meas2 - meas1;
-    }
+
+
+    time = meas2;
 
     distance = ( ((float)time / 3) / 58 );
+
 
     if (distance < 15) {
         GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN1);
@@ -93,7 +91,6 @@ void InitProx(void){
     GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN0);
 
 
-    /*Onboard LED setup */
     GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2);
     GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
     GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
@@ -107,7 +104,7 @@ void InitProx(void){
 
     /* Enabling interrupts */
     Interrupt_enableInterrupt(INT_TA0_N);
-
+    Interrupt_enableMaster();
 
     /* start Timer A0 */
     Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);

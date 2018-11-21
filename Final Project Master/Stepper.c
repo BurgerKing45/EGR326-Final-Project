@@ -28,14 +28,16 @@ void Update_Speedometer(uint16_t speed);
 void InitStepper(void);
 
 //Global Variables
-uint16_t CurrentSpeed = 0;
+
 
 /*Updates the speedometer */
 void Update_Speedometer(uint16_t speed){
     uint16_t steps;
+    static uint16_t CurrentSpeed = 0;
 
     if(CurrentSpeed <= speed){
         steps = speed - CurrentSpeed;
+
         stepper_move(steps, 0);
         CurrentSpeed = CurrentSpeed + steps;
     }
@@ -57,7 +59,7 @@ void InitStepper(void){
 
     /* Zero the speedometer */
     stepper_move(160, 1);
-    CurrentSpeed = 0;
+
 }
 
 //Stepper controller function
@@ -72,19 +74,19 @@ void stepper_move(uint16_t steps, uint8_t direction){
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, A | B);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, An | Bn);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, An | B);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, A | Bn);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, An| Bn);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, A | B);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, A | Bn);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, An | B);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
 
         }
@@ -96,19 +98,19 @@ void stepper_move(uint16_t steps, uint8_t direction){
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, A | Bn);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, An | B);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, An| Bn);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, A | B);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, An | B);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, A | Bn);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P7, A | B);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P7, An | Bn);
-            __delay_cycles(6000);
+            __delay_cycles(60000);
 
 
 

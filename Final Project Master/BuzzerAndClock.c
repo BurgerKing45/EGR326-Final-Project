@@ -33,7 +33,7 @@ void InitTimer32(uint32_t period){
 
     MAP_Timer32_initModule(TIMER32_BASE, TIMER32_PRESCALER_16, TIMER32_32BIT,
                            TIMER32_PERIODIC_MODE);
-    MAP_Timer32_setCount(TIMER32_BASE,period);
+    MAP_Timer32_setCount(TIMER32_BASE, period);
     MAP_Interrupt_enableInterrupt(INT_T32_INT1);
 
     MAP_Timer32_enableInterrupt(TIMER32_BASE);
@@ -74,7 +74,7 @@ void clockInit48MHzXTL(void) {
     /* Configuring pins for peripheral/crystal usage */
     MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_PJ,
                                                     GPIO_PIN3 | GPIO_PIN2, GPIO_PRIMARY_MODULE_FUNCTION);
-    CS_setExternalClockSourceFrequency(12000000,48000000); // enables getMCLK, getSMCLK to know externally set frequencies
+    CS_setExternalClockSourceFrequency(32768,48000000); // enables getMCLK, getSMCLK to know externally set frequencies
     /* Starting HFXT in non-bypass mode without a timeout. Before we start
      * we have to change VCORE to 1 to support the 48MHz frequency */
     MAP_PCM_setCoreVoltageLevel(PCM_VCORE1);

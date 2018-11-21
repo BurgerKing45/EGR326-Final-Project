@@ -51,7 +51,7 @@ Backlight.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdio.h
 Backlight.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/_ti_config.h
 Backlight.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/linkage.h
 Backlight.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdarg.h
-Backlight.obj: C:/Users/Ben/workspace_v8/Final\ Project\ Slave/Backlight.h
+Backlight.obj: C:/Users/samki/git/EGR326-Final-Project/Final\ Project\ Slave/Backlight.h
 
 ../Backlight.c: 
 C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/driverlib.h: 
@@ -104,4 +104,4 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdio.h:
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/_ti_config.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/linkage.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdarg.h: 
-C:/Users/Ben/workspace_v8/Final\ Project\ Slave/Backlight.h: 
+C:/Users/samki/git/EGR326-Final-Project/Final\ Project\ Slave/Backlight.h: 

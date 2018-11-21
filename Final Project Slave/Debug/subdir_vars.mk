@@ -16,10 +16,10 @@ C_SRCS += \
 ../BuzzerAndClock.c \
 ../Final\ Project\ Slave\ main.c \
 ../Flash.c \
-../I2C_Slave.c \
 ../Keypad.c \
 ../RTC.c \
 ../ST7735.c \
+../UART.c \
 ../image.c \
 ../startup_msp432p401r_ccs.c \
 ../system_msp432p401r.c 
@@ -29,10 +29,10 @@ C_DEPS += \
 ./BuzzerAndClock.d \
 ./Final\ Project\ Slave\ main.d \
 ./Flash.d \
-./I2C_Slave.d \
 ./Keypad.d \
 ./RTC.d \
 ./ST7735.d \
+./UART.d \
 ./image.d \
 ./startup_msp432p401r_ccs.d \
 ./system_msp432p401r.d 
@@ -42,10 +42,10 @@ OBJS += \
 ./BuzzerAndClock.obj \
 ./Final\ Project\ Slave\ main.obj \
 ./Flash.obj \
-./I2C_Slave.obj \
 ./Keypad.obj \
 ./RTC.obj \
 ./ST7735.obj \
+./UART.obj \
 ./image.obj \
 ./startup_msp432p401r_ccs.obj \
 ./system_msp432p401r.obj 
@@ -55,10 +55,10 @@ OBJS__QUOTED += \
 "BuzzerAndClock.obj" \
 "Final Project Slave main.obj" \
 "Flash.obj" \
-"I2C_Slave.obj" \
 "Keypad.obj" \
 "RTC.obj" \
 "ST7735.obj" \
+"UART.obj" \
 "image.obj" \
 "startup_msp432p401r_ccs.obj" \
 "system_msp432p401r.obj" 
@@ -68,10 +68,10 @@ C_DEPS__QUOTED += \
 "BuzzerAndClock.d" \
 "Final Project Slave main.d" \
 "Flash.d" \
-"I2C_Slave.d" \
 "Keypad.d" \
 "RTC.d" \
 "ST7735.d" \
+"UART.d" \
 "image.d" \
 "startup_msp432p401r_ccs.d" \
 "system_msp432p401r.d" 
@@ -81,10 +81,10 @@ C_SRCS__QUOTED += \
 "../BuzzerAndClock.c" \
 "../Final Project Slave main.c" \
 "../Flash.c" \
-"../I2C_Slave.c" \
 "../Keypad.c" \
 "../RTC.c" \
 "../ST7735.c" \
+"../UART.c" \
 "../image.c" \
 "../startup_msp432p401r_ccs.c" \
 "../system_msp432p401r.c" 

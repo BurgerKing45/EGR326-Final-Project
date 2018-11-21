@@ -9,3 +9,4 @@ void DisplayAlarmLog(void);
 void DisplaySpeedLog(void);
 void ExitDisplay(void);
 void IdleDisplay(void);
+void ClearLowerDisplay(void);

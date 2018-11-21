@@ -40,6 +40,10 @@ void ClearDisplay(void){
     ST7735_FillRect(0, 150, 128, 10, ST7735_Color565(0xFF, 0xFF, 0xFF));
 }
 
+void ClearLowerDisplay(void){
+    ST7735_FillRect(0, 80, 128, 70, 0);
+}
+
 void UpdateDisplay(uint16_t speed){
 
     char TimeDate[19];

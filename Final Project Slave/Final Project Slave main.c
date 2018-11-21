@@ -15,17 +15,19 @@
 #include <string.h>
 #include <stdio.h>
 
+
 /*Custom Libraries */
 #include "RTC.h"
 #include "Keypad.h"
 #include "ST7735.h"
 #include "Backlight.h"
 #include "BuzzerAndClock.h"
-#include "I2C_Slave.h"
+#include "UART.h"
 
 /* Global Variables*/
 char KeyPressed = NULL;
 uint8_t KeyFlag = 0;
+uint8_t TransmissionFlag = 0;
 
 int main(void) {
 
@@ -34,7 +36,7 @@ int main(void) {
 
     /* Initializations */
     clockInit48MHzXTL();
-    initSlaveI2C();
+    InitUART();
     initKeypad();
 
     MAP_Interrupt_enableMaster();
@@ -50,47 +52,80 @@ int main(void) {
 
 
         KeyPressed = getKey();
+
+        if( KeyPressed != NULL) {
+            MAP_UART_transmitData(EUSCI_A1_BASE, KeyPressed);
+            KeyPressed = NULL;
+
+        }
     }
 
 }
 
-/* Interrupt Handler to Receive Data via I2C on P1.6 */
-void EUSCIB0_IRQHandler(void) {
-    uint32_t status = I2C_getEnabledInterruptStatus(EUSCI_B0_BASE);
-    uint8_t rxdata;
+/* EUSCI A1 UART ISR - Echoes data back to PC host */
+void EUSCIA1_IRQHandler(void)
+{
+    uint8_t rcv_byte = 0;
+    uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A1_BASE);
 
-    MAP_I2C_clearInterruptFlag(EUSCI_B0_BASE, status);  // clear the receive interrupt
+    MAP_UART_clearInterruptFlag(EUSCI_A1_BASE, status);
 
-    if (status & EUSCI_B_I2C_RECEIVE_INTERRUPT0) {
+    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+    {
+        rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
 
-        rxdata = MAP_I2C_slaveGetData(EUSCI_B0_BASE);    // receives the data
-
-        if (rxdata == 0) {
-            //
+        if(rcv_byte == 1){
+            StartBuzzer(1);
         }
-        if (rxdata == 1) {
-            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN0);
+        else if(rcv_byte == 2){
+            StopBuzzer();
+        }
 
-        }
-        if (rxdata == 2) {
-            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
-
-        }
-        if (rxdata == 3) {
-            // turn off chime 1
-        }
-        if (rxdata == 4) {
-            // turn off chime 2
-        }
     }
-
-    if (status & EUSCI_B_I2C_TRANSMIT_INTERRUPT0){
-        MAP_I2C_slavePutData(EUSCI_B0_BASE, KeyPressed);
-        KeyPressed = NULL;
-    }
-
 
 }
+
+///* Interrupt Handler to Receive Data via I2C on P1.6 */
+//void EUSCIB0_IRQHandler(void) {
+//    uint32_t status = I2C_getEnabledInterruptStatus(EUSCI_B0_BASE);
+//    uint8_t rxdata;
+//
+//    MAP_I2C_clearInterruptFlag(EUSCI_B0_BASE, status);  // clear the receive interrupt
+//
+//    if (status & EUSCI_B_I2C_RECEIVE_INTERRUPT0) {
+//
+//        rxdata = MAP_I2C_slaveGetData(EUSCI_B0_BASE);    // receives the data
+//
+//        if (rxdata == 0) {
+//            //
+//        }
+//        if (rxdata == 1) {
+//            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN0);
+//
+//        }
+//        if (rxdata == 2) {
+//            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
+//
+//        }
+//        if (rxdata == 3) {
+//            // turn off chime 1
+//        }
+//        if (rxdata == 4) {
+//            // turn off chime 2
+//        }
+//    }
+//
+//    if (status & EUSCI_B_I2C_TRANSMIT_INTERRUPT0){
+//        TransmissionFlag = 1;
+//        //if( KeyPressed != NULL ){
+//
+//            //MAP_I2C_slavePutData(EUSCI_B0_BASE, KeyPressed);
+//            //KeyPressed = NULL;
+//        //}
+//    }
+//
+//
+//}
 
 
 
