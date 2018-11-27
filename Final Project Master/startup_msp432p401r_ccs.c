@@ -63,6 +63,8 @@ extern void T32_INT1_IRQHandler(void);
 extern void EUSCIA1_IRQHandler(void);
 extern void PORT3_IRQHandler(void);
 extern void TA0_N_IRQHandler(void);
+extern void T32_INT2_IRQHandler(void);
+extern void PORT1_IRQHandler(void);
 
 /* Interrupt vector table.  Note that the proper constructs must be placed on this to  */
 /* ensure that it ends up at physical address 0x0000.0000 or at the start of          */
@@ -114,7 +116,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* EUSCIB3 ISR               */
     ADC14_IRQHandler,                             /* ADC14 ISR                 */
     T32_INT1_IRQHandler,                             /* T32_INT1 ISR              */
-    defaultISR,                             /* T32_INT2 ISR              */
+    T32_INT2_IRQHandler,                             /* T32_INT2 ISR              */
     defaultISR,                             /* T32_INTC ISR              */
     defaultISR,                             /* AES ISR                   */
     defaultISR,                             /* RTC ISR                   */
@@ -123,7 +125,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* DMA_INT2 ISR              */
     defaultISR,                             /* DMA_INT1 ISR              */
     defaultISR,                             /* DMA_INT0 ISR              */
-    defaultISR,                             /* PORT1 ISR                 */
+    PORT1_IRQHandler,                             /* PORT1 ISR                 */
     defaultISR,                             /* PORT2 ISR                 */
     PORT3_IRQHandler,                             /* PORT3 ISR                 */
     defaultISR,                             /* PORT4 ISR                 */

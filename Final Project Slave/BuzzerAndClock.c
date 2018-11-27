@@ -37,6 +37,7 @@ void StartBuzzer(uint32_t Freq){
     MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P10, GPIO_PIN5, GPIO_PRIMARY_MODULE_FUNCTION);
 
 
+    pwmConfigA3.dutyCycle = 4;
     //Configuring Timer_A3 to have a frequency of 4000Hz.
     MAP_Timer_A_generatePWM(TIMER_A3_BASE, &pwmConfigA3);
 
@@ -51,8 +52,14 @@ void StartBuzzer(uint32_t Freq){
 }
 void StopBuzzer(void){
 
-    MAP_Timer_A_stopTimer(TIMER_A0_BASE);
-    MAP_Timer_A_stopTimer(TIMER_A3_BASE);
+//    MAP_Timer_A_stopTimer(TIMER_A0_BASE);
+//    MAP_Timer_A_stopTimer(TIMER_A3_BASE);
+
+    pwmConfigA0.dutyCycle = 0;
+    pwmConfigA3.dutyCycle = 0;
+
+    MAP_Timer_A_generatePWM(TIMER_A3_BASE, &pwmConfigA3);
+    MAP_Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfigA0);
 }
 
 /* sets the clock module to use the external 48 MHz crystal

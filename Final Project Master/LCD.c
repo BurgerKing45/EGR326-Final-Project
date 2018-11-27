@@ -44,31 +44,67 @@ void ClearLowerDisplay(void){
     ST7735_FillRect(0, 80, 128, 70, 0);
 }
 
-void UpdateDisplay(uint16_t speed){
+void UpdateDisplay(uint16_t speed, char *TimeDate, uint8_t DisplayStyle){
 
-    char TimeDate[19];
     char formattedTimeDate[21];
-    char formattedSpeed[6];
-    char formattedTemp[8];
+    char formattedSpeed[9];
+    char formattedTemp[9];
+    char justTime[10];
 
     // Converting and displaying the time and date
-    strcpy(TimeDate, returnTimeDateInfo() );
+    // strcpy(TimeDate, returnTimeDateInfo() );
     parseTimeDate(TimeDate);
     snprintf(formattedTimeDate, sizeof formattedTimeDate, "%s:%s:%s %s/%s/20%s ", lcd_hours, lcd_minutes, lcd_seconds, lcd_month, lcd_date, lcd_year);
-
-    ST7735_DrawString(1, 1, formattedTimeDate, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
     strncpy(lcd_temp, TimeDate + 13, 5);  // this had to be moved here for some reason
 
     // Converting and displaying the temperature
-    snprintf(formattedTemp, sizeof formattedTemp, "%sF", lcd_temp);
-    ST7735_DrawString(7, 3, formattedTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+    snprintf(formattedTemp, sizeof formattedTemp, "%sC ", lcd_temp);
 
     // Converting and displaying the speed
-    snprintf(formattedSpeed, sizeof formattedSpeed, "%dmph", speed);
-    ST7735_DrawString(6, 6, formattedSpeed, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
+    snprintf(formattedSpeed, sizeof formattedSpeed, " %dmph  ", speed);
+
+    //Emphasis on Speed
+    if(DisplayStyle == 0){
 
 
+        ST7735_DrawString(7, 3, formattedTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+
+        ST7735_DrawString(1, 1, formattedTimeDate, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+
+        ST7735_DrawString(4, 6, formattedSpeed, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
+
+    }
+
+    //Emphasis on Temp
+    else if(DisplayStyle == 1){
+
+        ST7735_DrawString(7, 3, formattedSpeed, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+
+        ST7735_DrawString(1, 1, formattedTimeDate, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+
+        ST7735_DrawString(4, 6, formattedTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
+
+    }
+
+    //Emphasis on Time
+    else if(DisplayStyle == 2){
+
+        ST7735_DrawString(7, 3, formattedTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+
+        ST7735_DrawString(1, 1, formattedSpeed, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+        strncpy(justTime, formattedTimeDate, 9);
+
+
+        ST7735_DrawString(4, 6, justTime, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
+
+    }
 }
 
 void IdleDisplay(void){
@@ -81,6 +117,8 @@ void MenuDisplay(void){
     ST7735_DrawString(1, 9, "2) Check Alarm Log", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
     ST7735_DrawString(1, 10,"3) Check Speed Log", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
     ST7735_DrawString(1, 11, "4) Exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+    ST7735_FillRect(0, 120, 128, 30, 0);
 }
 
 void parseTimeDate(char string[]) {
@@ -102,9 +140,11 @@ void DisplayTime(char time[]){
 void DisplayAlarmLog(void){
     //char Log[65];       // string of time and date log
 
-   // strcpy(Log, ReadFromFlash(1));  // store current log in flash as string
+    // strcpy(Log, ReadFromFlash(1));  // store current log in flash as string
 
     FlashDisplay( ReadFromFlash(1) );
+
+    ST7735_DrawString(1, 14, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 }
 
@@ -115,10 +155,9 @@ void DisplaySpeedLog(void){
 
     FlashDisplay(ReadFromFlash(2));
 
-}
-
-
-void ExitDisplay(void){
     ST7735_DrawString(1, 14, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
 }
+
+
 

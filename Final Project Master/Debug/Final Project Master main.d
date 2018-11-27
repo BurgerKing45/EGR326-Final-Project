@@ -57,10 +57,12 @@ Final\ Project\ Master\ main.obj: ../Keypad.h
 Final\ Project\ Master\ main.obj: ../ST7735.h
 Final\ Project\ Master\ main.obj: ../Backlight.h
 Final\ Project\ Master\ main.obj: ../BuzzerAndClock.h
-Final\ Project\ Master\ main.obj: ../I2C_Master.h
 Final\ Project\ Master\ main.obj: ../Stepper.h
 Final\ Project\ Master\ main.obj: ../Flash.h
 Final\ Project\ Master\ main.obj: ../LCD.h
+Final\ Project\ Master\ main.obj: ../UART.h
+Final\ Project\ Master\ main.obj: ../NeedForSpeed.h
+Final\ Project\ Master\ main.obj: ../Prox.h
 
 ../Final\ Project\ Master\ main.c: 
 C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/driverlib.h: 
@@ -119,7 +121,9 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdarg.h:
 ../ST7735.h: 
 ../Backlight.h: 
 ../BuzzerAndClock.h: 
-../I2C_Master.h: 
 ../Stepper.h: 
 ../Flash.h: 
 ../LCD.h: 
+../UART.h: 
+../NeedForSpeed.h: 
+../Prox.h: 

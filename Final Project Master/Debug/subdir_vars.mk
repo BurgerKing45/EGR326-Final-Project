@@ -16,13 +16,14 @@ C_SRCS += \
 ../BuzzerAndClock.c \
 ../Final\ Project\ Master\ main.c \
 ../Flash.c \
-../I2C_Master.c \
 ../Keypad.c \
 ../LCD.c \
+../NeedForSpeed.c \
 ../Prox.c \
 ../RTC.c \
 ../ST7735.c \
 ../Stepper.c \
+../UART.c \
 ../image.c \
 ../startup_msp432p401r_ccs.c \
 ../system_msp432p401r.c 
@@ -32,13 +33,14 @@ C_DEPS += \
 ./BuzzerAndClock.d \
 ./Final\ Project\ Master\ main.d \
 ./Flash.d \
-./I2C_Master.d \
 ./Keypad.d \
 ./LCD.d \
+./NeedForSpeed.d \
 ./Prox.d \
 ./RTC.d \
 ./ST7735.d \
 ./Stepper.d \
+./UART.d \
 ./image.d \
 ./startup_msp432p401r_ccs.d \
 ./system_msp432p401r.d 
@@ -48,13 +50,14 @@ OBJS += \
 ./BuzzerAndClock.obj \
 ./Final\ Project\ Master\ main.obj \
 ./Flash.obj \
-./I2C_Master.obj \
 ./Keypad.obj \
 ./LCD.obj \
+./NeedForSpeed.obj \
 ./Prox.obj \
 ./RTC.obj \
 ./ST7735.obj \
 ./Stepper.obj \
+./UART.obj \
 ./image.obj \
 ./startup_msp432p401r_ccs.obj \
 ./system_msp432p401r.obj 
@@ -64,13 +67,14 @@ OBJS__QUOTED += \
 "BuzzerAndClock.obj" \
 "Final Project Master main.obj" \
 "Flash.obj" \
-"I2C_Master.obj" \
 "Keypad.obj" \
 "LCD.obj" \
+"NeedForSpeed.obj" \
 "Prox.obj" \
 "RTC.obj" \
 "ST7735.obj" \
 "Stepper.obj" \
+"UART.obj" \
 "image.obj" \
 "startup_msp432p401r_ccs.obj" \
 "system_msp432p401r.obj" 
@@ -80,13 +84,14 @@ C_DEPS__QUOTED += \
 "BuzzerAndClock.d" \
 "Final Project Master main.d" \
 "Flash.d" \
-"I2C_Master.d" \
 "Keypad.d" \
 "LCD.d" \
+"NeedForSpeed.d" \
 "Prox.d" \
 "RTC.d" \
 "ST7735.d" \
 "Stepper.d" \
+"UART.d" \
 "image.d" \
 "startup_msp432p401r_ccs.d" \
 "system_msp432p401r.d" 
@@ -96,13 +101,14 @@ C_SRCS__QUOTED += \
 "../BuzzerAndClock.c" \
 "../Final Project Master main.c" \
 "../Flash.c" \
-"../I2C_Master.c" \
 "../Keypad.c" \
 "../LCD.c" \
+"../NeedForSpeed.c" \
 "../Prox.c" \
 "../RTC.c" \
 "../ST7735.c" \
 "../Stepper.c" \
+"../UART.c" \
 "../image.c" \
 "../startup_msp432p401r_ccs.c" \
 "../system_msp432p401r.c" 

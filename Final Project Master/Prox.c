@@ -59,7 +59,14 @@ uint8_t CheckProx(uint32_t meas1, uint32_t meas2){
 
 
 
-    time = meas2;
+    //time = meas2;
+
+    if(meas2 < meas1) {
+        time = meas2 + 65535 - meas1;
+    }
+    else {
+        time = meas2 - meas1;
+    }
 
     distance = ( ((float)time / 3) / 58 );
 
@@ -91,10 +98,8 @@ void InitProx(void){
     GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN0);
 
 
-    GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
-    GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN2);
+    GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0 | GPIO_PIN1);
+
 
     /* Configuring Capture Mode */
     Timer_A_initCapture(TIMER_A0_BASE, &Prox_captureModeConfig);

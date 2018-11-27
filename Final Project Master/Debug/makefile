@@ -14,13 +14,14 @@ ORDERED_OBJS += \
 "./BuzzerAndClock.obj" \
 "./Final Project Master main.obj" \
 "./Flash.obj" \
-"./I2C_Master.obj" \
 "./Keypad.obj" \
 "./LCD.obj" \
+"./NeedForSpeed.obj" \
 "./Prox.obj" \
 "./RTC.obj" \
 "./ST7735.obj" \
 "./Stepper.obj" \
+"./UART.obj" \
 "./image.obj" \
 "./startup_msp432p401r_ccs.obj" \
 "./system_msp432p401r.obj" \
@@ -170,8 +171,8 @@ Final\ Project\ Master.bin: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Backlight.obj" "BuzzerAndClock.obj" "Final Project Master main.obj" "Flash.obj" "I2C_Master.obj" "Keypad.obj" "LCD.obj" "Prox.obj" "RTC.obj" "ST7735.obj" "Stepper.obj" "image.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
-	-$(RM) "Backlight.d" "BuzzerAndClock.d" "Final Project Master main.d" "Flash.d" "I2C_Master.d" "Keypad.d" "LCD.d" "Prox.d" "RTC.d" "ST7735.d" "Stepper.d" "image.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
+	-$(RM) "Backlight.obj" "BuzzerAndClock.obj" "Final Project Master main.obj" "Flash.obj" "Keypad.obj" "LCD.obj" "NeedForSpeed.obj" "Prox.obj" "RTC.obj" "ST7735.obj" "Stepper.obj" "UART.obj" "image.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
+	-$(RM) "Backlight.d" "BuzzerAndClock.d" "Final Project Master main.d" "Flash.d" "Keypad.d" "LCD.d" "NeedForSpeed.d" "Prox.d" "RTC.d" "ST7735.d" "Stepper.d" "UART.d" "image.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

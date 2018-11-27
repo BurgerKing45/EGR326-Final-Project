@@ -74,10 +74,23 @@ void EUSCIA1_IRQHandler(void)
     {
         rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
 
+        //Overheat Condition
         if(rcv_byte == 1){
             StartBuzzer(1);
+
         }
+        //Overheat over condition
         else if(rcv_byte == 2){
+            StopBuzzer();
+
+        }
+        //Prox triggered condition
+        else if(rcv_byte == 3){
+            StartBuzzer(10);
+
+        }
+        //End prox triggered condition
+        else if(rcv_byte == 4){
             StopBuzzer();
         }
 

@@ -29,15 +29,25 @@ Timer_A_PWMConfig pwmConfigA3 =
  4
 };
 
+void InitLCD_Delay(uint32_t period){
+
+    MAP_Timer32_initModule(TIMER32_1_BASE, TIMER32_PRESCALER_16, TIMER32_32BIT,
+                           TIMER32_PERIODIC_MODE);
+    MAP_Timer32_setCount(TIMER32_1_BASE, period);
+    MAP_Interrupt_enableInterrupt(TIMER32_1_INTERRUPT);
+
+    MAP_Timer32_enableInterrupt(TIMER32_1_BASE);
+    MAP_Timer32_startTimer(TIMER32_1_BASE, true);
+}
 void InitTimer32(uint32_t period){
 
-    MAP_Timer32_initModule(TIMER32_BASE, TIMER32_PRESCALER_16, TIMER32_32BIT,
+    MAP_Timer32_initModule(TIMER32_0_BASE, TIMER32_PRESCALER_16, TIMER32_32BIT,
                            TIMER32_PERIODIC_MODE);
-    MAP_Timer32_setCount(TIMER32_BASE, period);
-    MAP_Interrupt_enableInterrupt(INT_T32_INT1);
+    MAP_Timer32_setCount(TIMER32_0_BASE, period);
+    MAP_Interrupt_enableInterrupt(TIMER32_0_INTERRUPT);
 
-    MAP_Timer32_enableInterrupt(TIMER32_BASE);
-    MAP_Timer32_startTimer(TIMER32_BASE, false);
+    MAP_Timer32_enableInterrupt(TIMER32_0_BASE);
+    MAP_Timer32_startTimer(TIMER32_0_BASE, false);
 }
 void StartBuzzer(uint32_t Freq){
 

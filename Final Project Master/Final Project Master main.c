@@ -48,6 +48,7 @@ uint8_t rcvflag;
 //Speed related
 uint16_t speed_count = 0;
 uint16_t speed = 0;
+uint16_t prev_speed = 0;
 
 //Prox Related
 uint32_t meas1 = 0;
@@ -55,6 +56,12 @@ uint32_t meas2 = 0;
 uint8_t ProxFlag = 0;
 uint8_t ProxMeasured = 0;
 
+/* Time, date and temp returnted from the RTC */
+char TimeDate[19];
+
+uint8_t DisplayStyle = 0;
+
+uint8_t TimeOut = 0;
 
 /* variables for user keypad input */
 char m_seconds[2];
@@ -89,6 +96,11 @@ void promptDate(void);
 void promptMonth(void);
 void promptYear(void);
 
+void CheckRTC(void);
+void CheckSpeed(void);
+void CheckTemp(void);
+
+void InitButton(void);
 
 char user_entry[] = "xx:xx:xx xx/xx/20xx";
 
@@ -113,22 +125,29 @@ int main(void) {
             InitBacklight();     // check for clock issues now that we are running at 48 MHz
             InitStepper();
             InitProx();
+            InitButton();
 
 
 
-            //Init Display
-            ClearDisplay();
 
             InitTimer32(3000000);
             InitHall();
             InitSysTick(12000000);
 
 
+
+            //Init Display
+            ClearDisplay();
+
+            MAP_Interrupt_enableMaster();
+
+
+
             // MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN0);
 
             // StopBuzzer();  // stop buzzer
 
-            MAP_Interrupt_enableMaster();
+
 
             //MAP_UART_transmitData(EUSCI_A1_BASE, 1);
 
@@ -141,8 +160,13 @@ int main(void) {
             StateChanged = 0;
 
             //Idle Display
-            //ClearLowerDisplay();
+            Timer32_haltTimer(TIMER32_0_BASE);
+
+          //  InitLCD_Delay(1500000);
+
+            ClearLowerDisplay();
             IdleDisplay();
+            InitTimer32(3000000);
 
             //Request keypad info from slave
 
@@ -153,7 +177,7 @@ int main(void) {
                     state = Menu;
                     StateChanged = 1;
                     rcv_byte = 0;
-                    MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+                    //MAP_UART_transmitData(EUSCI_A1_BASE, 1);
 
 
                 }
@@ -168,9 +192,12 @@ int main(void) {
             StateChanged = 0;
 
             //Clear Display and print menu
-            //ClearLowerDisplay();
-            MenuDisplay();
+            // ClearLowerDisplay();
+            Timer32_haltTimer(TIMER32_0_BASE);
 
+
+            MenuDisplay();
+            InitTimer32(3000000);
 
 
             while(!StateChanged){
@@ -207,7 +234,11 @@ int main(void) {
             StateChanged = 0;
 
             //Time Enter Display
-            //ClearLowerDisplay();
+            Timer32_haltTimer(TIMER32_0_BASE);
+
+            ClearLowerDisplay();
+            InitTimer32(3000000);
+            TimeOut = 0;
 
             promptTime();
 
@@ -247,16 +278,12 @@ int main(void) {
 
             StateChanged = 0;
             //ClearLowerDisplay();
-            //Testing
-            WriteToFlash("0201120181118", 1);
-            WriteToFlash("0001120181118", 1);
-            WriteToFlash("0401120181118", 1);
-            WriteToFlash("0001120181118", 1);
-            WriteToFlash("0001120181118", 1);
 
+
+            Timer32_haltTimer(TIMER32_0_BASE);
 
             DisplayAlarmLog();
-            ExitDisplay();
+            InitTimer32(3000000);
 
             while(!StateChanged){
 
@@ -274,16 +301,14 @@ int main(void) {
         case SpeedLog :
 
             StateChanged = 0;
-            // ClearLowerDisplay();
-            //Testing
-            WriteToFlash("0001120181118", 2);
-            WriteToFlash("0101120181118", 2);
-            WriteToFlash("0001120181118", 2);
-            WriteToFlash("0001120181118", 2);
-            WriteToFlash("0501120181118", 2);
+            //ClearLowerDisplay();
+
+
+
+            Timer32_haltTimer(TIMER32_0_BASE);
 
             DisplaySpeedLog();
-            ExitDisplay();
+            InitTimer32(3000000);
 
             while(!StateChanged){
 
@@ -311,24 +336,34 @@ void SysTick_Handler(void)
     speed_count = 0;
     InitSysTick(12000000);
 }
+/* Timer32 ISR for LCD Display */
+void T32_INT2_IRQHandler(void){
+    MAP_Timer32_clearInterruptFlag(TIMER32_1_BASE);
 
+    //Renable the main interrupt
+  //  InitTimer32(3000000);
+
+
+}
 /* Timer32 ISR */
 void T32_INT1_IRQHandler(void){
-    MAP_Timer32_clearInterruptFlag(TIMER32_BASE);
-    PulseProx();
-    UpdateDisplay(speed);
-    Update_Speedometer(speed);
+    MAP_Timer32_clearInterruptFlag(TIMER32_0_BASE);
 
-    if(speed >= 85){
-        MAP_UART_transmitData(EUSCI_A1_BASE, 1);
-    }
-    else{
-        MAP_UART_transmitData(EUSCI_A1_BASE, 2);
-    }
+    TimeOut = 1;
+
+    CheckRTC();
+    UpdateDisplay(speed, TimeDate, DisplayStyle);
+    Update_Speedometer(speed);
+    CheckSpeed();
+    //Checking the prox. Disable speed checking
+
+    SysTick_disableModule();
+    Interrupt_disableInterrupt(INT_PORT3);
+    PulseProx();
+
+
     MAP_ADC14_toggleConversionTrigger();
-    //while(!ProxMeasured);
-    ProxFlag = CheckProx(meas1, meas2);
-    ProxMeasured = 0;
+
 
 
 }
@@ -341,19 +376,32 @@ void TA0_N_IRQHandler(void){
 
         if(P2IN & BIT4) rising=1; else rising=0; // check for rising or falling edge on input
         if(rising) {
-            //meas1 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1); // read timer_A value
+            meas1 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1); // read timer_A value
 
-            MAP_Timer_A_stopTimer(TIMER_A0_BASE);
-
-            TA0R = 0;
-            /* start Timer A0 */
-            Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);
+            //            MAP_Timer_A_stopTimer(TIMER_A0_BASE);
+            //
+            //            TA0R = 0;
+            //            /* start Timer A0 */
+            //            Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_CONTINUOUS_MODE);
 
 
         }
         else {
             meas2 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1); // read timer_A value
+            ProxFlag = CheckProx(meas1, meas2);
+
+            if(ProxFlag == 1)
+            {
+                MAP_UART_transmitData(EUSCI_A1_BASE, 3);
+            }
+            else if (ProxFlag == 0)
+            {
+                MAP_UART_transmitData(EUSCI_A1_BASE, 4);
+            }
+
             ProxMeasured = 1;
+            InitSysTick(12000000);
+            Interrupt_enableInterrupt(INT_PORT3);
         }
     }
 }
@@ -379,9 +427,12 @@ void EUSCIA1_IRQHandler(void)
 
     MAP_UART_clearInterruptFlag(EUSCI_A1_BASE, status);
 
+
+
     if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
     {
         rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
+
 
     }
 
@@ -437,7 +488,45 @@ void ADC14_IRQHandler(void)
 
 }
 
+void CheckSpeed(void){
+    char SpeedTimeDate[13];
 
+            if( (speed >= 85) && (prev_speed < 85) ){
+                MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+
+                strncpy(SpeedTimeDate, TimeDate, 13);
+
+                WriteToFlash(SpeedTimeDate, 2);
+            }
+            else if( (speed < 85) && (prev_speed >= 85) ) {
+                MAP_UART_transmitData(EUSCI_A1_BASE, 2);
+            }
+
+            prev_speed = speed;
+
+}
+
+void CheckTemp(void){
+    char TempTimeDate[13];
+
+                if( (speed >= 85) && (prev_speed < 85) ){
+                    MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+
+                    strncpy(TempTimeDate, TimeDate, 13);
+
+                    WriteToFlash(TempTimeDate, 1);
+                }
+                else if( (speed < 85) && (prev_speed >= 85) ) {
+                    MAP_UART_transmitData(EUSCI_A1_BASE, 2);
+                }
+
+                prev_speed = speed;
+}
+
+void CheckRTC(void){
+
+    strcpy(TimeDate, returnTimeDateInfo() );
+}
 
 /* prompts user to enter time and date info */
 void promptTime(void) {
@@ -686,6 +775,29 @@ void promptYear(void) {
             return;
         }
     }
+}
+
+//Push button interrupt on P1.1 or P1.4. When interrupt is triggered, sends data via I2C SDA line on port 1
+void PORT1_IRQHandler(void){
+    uint32_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P1);
+    GPIO_clearInterruptFlag(GPIO_PORT_P1, status);
+
+    if(status & GPIO_PIN1){
+
+        DisplayStyle = DisplayStyle + 1;
+
+        if(DisplayStyle == 3) DisplayStyle = 0;
+
+
+    }
+
+}
+
+void InitButton(void){
+    MAP_GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1 );
+    MAP_GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1 );
+    MAP_GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1 );
+    MAP_Interrupt_enableInterrupt(INT_PORT1);
 }
 
 ///* prompt user to enter day */
