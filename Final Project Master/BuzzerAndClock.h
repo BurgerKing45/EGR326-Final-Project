@@ -26,4 +26,4 @@ void clockInit48MHzXTL(void);
  */
 void InitTimer32(uint32_t period);
 
-void InitLCD_Delay(uint32_t period);
+void InitTimeOutDelay(uint32_t period);

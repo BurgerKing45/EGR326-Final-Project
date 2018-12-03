@@ -23,11 +23,18 @@
 #include "Backlight.h"
 #include "BuzzerAndClock.h"
 #include "UART.h"
+#include "LEDs_PBs.h"
+
+#include "msp.h"
+#include "CTS_Layer.h"
 
 /* Global Variables*/
 char KeyPressed = NULL;
 uint8_t KeyFlag = 0;
 uint8_t TransmissionFlag = 0;
+
+uint8_t LeftFlag = 0;
+uint8_t RightFlag = 0;
 
 int main(void) {
 
@@ -38,6 +45,21 @@ int main(void) {
     clockInit48MHzXTL();
     InitUART();
     initKeypad();
+    InitTurnSignalButtons();
+    InitTimerA();
+
+
+    P1DIR |= BIT0;
+    P1OUT &= ~BIT0;
+
+
+
+
+    TI_CAPT_Init_Baseline(&my_button);
+
+
+
+    TI_CAPT_Update_Baseline(&my_button, 5);
 
     MAP_Interrupt_enableMaster();
 
@@ -61,6 +83,8 @@ int main(void) {
     }
 
 }
+
+
 
 /* EUSCI A1 UART ISR - Echoes data back to PC host */
 void EUSCIA1_IRQHandler(void)
@@ -87,13 +111,49 @@ void EUSCIA1_IRQHandler(void)
         //Prox triggered condition
         else if(rcv_byte == 3){
             StartBuzzer(10);
+            StartWarning();
 
         }
         //End prox triggered condition
         else if(rcv_byte == 4){
             StopBuzzer();
+            StopWarning();
         }
 
+    }
+
+}
+
+void PORT6_IRQHandler(void){
+    uint32_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P6);
+    GPIO_clearInterruptFlag(GPIO_PORT_P6, status);
+
+    //Turn on left turn signal
+    if(status & GPIO_PIN4){
+
+        if(LeftFlag == 0){
+            LeftFlag = 1;
+            StartLeft();
+        }
+        else{
+            LeftFlag = 0;
+            StopLeft();
+        }
+
+
+    }
+
+    //Turn on right turn signal
+    if(status & GPIO_PIN5){
+
+        if(RightFlag == 0){
+            RightFlag = 1;
+            StartRight();
+        }
+        else{
+            RightFlag = 0;
+            StopRight();
+        }
     }
 
 }

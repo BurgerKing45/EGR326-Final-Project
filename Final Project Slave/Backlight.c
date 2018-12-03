@@ -30,32 +30,28 @@ void InitBacklight(void)
     // Setting up GPIO P5.5 as a analog input
     MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P5, GPIO_PIN5, GPIO_TERTIARY_MODULE_FUNCTION);
 
+    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P5, GPIO_PIN2, GPIO_TERTIARY_MODULE_FUNCTION);
+
     /* Configuring ADC Memory (ADC_MEM0 A0/A1) in repeat mode
      * with internal reference. (Vcc = 3.3v) */
-    MAP_ADC14_configureSingleSampleMode(ADC_MEM0, true);
+    MAP_ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, false);
+
     MAP_ADC14_configureConversionMemory(ADC_MEM0, ADC_VREFPOS_AVCC_VREFNEG_VSS,
                                         ADC_INPUT_A0, false);
 
+    MAP_ADC14_configureConversionMemory(ADC_MEM1, ADC_VREFPOS_AVCC_VREFNEG_VSS,
+                                           ADC_INPUT_A3, false);
+
     /* Enabling sample timer in auto iteration mode and interrupts*/
-    MAP_ADC14_enableSampleTimer(ADC_MANUAL_ITERATION);
+    MAP_ADC14_enableSampleTimer(ADC_AUTOMATIC_ITERATION);
 
     /* Triggering the start of the sample */
     MAP_ADC14_enableConversion();
     MAP_ADC14_toggleConversionTrigger();
 
     /* Enabling Interrupts */
-    MAP_ADC14_enableInterrupt(ADC_INT0);
+    MAP_ADC14_enableInterrupt(ADC_INT1);
     MAP_Interrupt_enableInterrupt(INT_ADC14);
-
-    /* Configuring SysTick to trigger at 1500000 (MCLK is 3MHz so this will make
-     * it toggle every 0.5s) */
-    MAP_SysTick_enableModule();
-    MAP_SysTick_setPeriod(1500000);
-    // MAP_Interrupt_enableSleepOnIsrExit();
-    MAP_SysTick_enableInterrupt();
-
-    /* Enabling MASTER interrupts */
-    MAP_Interrupt_enableMaster();
 
 }
 

@@ -9,3 +9,9 @@ void DisplayAlarmLog(void);
 void DisplaySpeedLog(void);
 void IdleDisplay(void);
 void ClearLowerDisplay(void);
+
+void PrintProxWarning(void);
+void ClearProxWarning(void);
+void PrintTempWarning(void);
+void ClearTempWarning(void);
+void DisplayOutsideTemp(float OutTemp);

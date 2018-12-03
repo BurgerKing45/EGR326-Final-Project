@@ -8,6 +8,11 @@
 #include <string.h>
 #include "keypad.h"
 
+#include "msp.h"
+#include "CTS_Layer.h"
+
+uint8_t CapLatch = 0;
+
 /* initialize keypad, use P4.0 - P4.6 */
 void initKeypad(void) {
 
@@ -85,6 +90,17 @@ char getKey (void)
     //Continue this loop until keypad data is received
     while(1)
     {
+        if( TI_CAPT_Button(&my_button) ){
+           //MAP_UART_transmitData(EUSCI_A1_BASE, 12);
+            P1OUT |= BIT0;
+            CapLatch = 1;
+        }
+        else if( !(TI_CAPT_Button(&my_button))  ){
+         //  MAP_UART_transmitData(EUSCI_A1_BASE, 13);
+            CapLatch = 0;
+            P1OUT &= ~BIT0;
+        }
+
         //key is returned from getKey
         key = scanKeypad();
         //Detect rising edge of key press. Only accept entry of a pressed key if the

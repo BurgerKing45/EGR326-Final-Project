@@ -35,14 +35,42 @@ char lcd_temp[4];
 
 void parseTimeDate(char string[]);
 
+void DisplayOutsideTemp(float OutTemp){
+   char formattedOutTemp[9];
+
+    snprintf(formattedOutTemp, sizeof formattedOutTemp, "%6.3fC ", OutTemp);
+
+    ST7735_DrawString(3, 9, formattedOutTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
+
+    ST7735_DrawString(1, 14, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+}
+
 void ClearDisplay(void){
     ST7735_FillScreen(0);
-    ST7735_FillRect(0, 150, 128, 10, ST7735_Color565(0xFF, 0xFF, 0xFF));
+    //ST7735_FillRect(0, 150, 128, 10, ST7735_Color565(0xFF, 0xFF, 0xFF));
 }
 
 void ClearLowerDisplay(void){
     ST7735_FillRect(0, 80, 128, 70, 0);
 }
+
+void PrintProxWarning(void){
+    ST7735_DrawString(0, 14, "  Collision Warning", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+}
+
+void ClearProxWarning(void){
+    ST7735_DrawString(0, 14, "                   ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+}
+
+void PrintTempWarning(void){
+    ST7735_DrawString(0, 15, " Temperature Warning", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+}
+
+void ClearTempWarning(void){
+    ST7735_DrawString(0, 15, "                      ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+}
+
 
 void UpdateDisplay(uint16_t speed, char *TimeDate, uint8_t DisplayStyle){
 
@@ -62,7 +90,7 @@ void UpdateDisplay(uint16_t speed, char *TimeDate, uint8_t DisplayStyle){
     snprintf(formattedTemp, sizeof formattedTemp, "%sC ", lcd_temp);
 
     // Converting and displaying the speed
-    snprintf(formattedSpeed, sizeof formattedSpeed, " %dmph  ", speed);
+    snprintf(formattedSpeed, sizeof formattedSpeed, " %dmph    ", speed);
 
     //Emphasis on Speed
     if(DisplayStyle == 0){
@@ -103,7 +131,7 @@ void UpdateDisplay(uint16_t speed, char *TimeDate, uint8_t DisplayStyle){
 
 
         ST7735_DrawString(4, 6, justTime, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
-
+        Timer32_enableInterrupt(TIMER32_0_BASE);
     }
 }
 
@@ -116,9 +144,9 @@ void MenuDisplay(void){
     ST7735_DrawString(1, 8, "1) Set Time", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
     ST7735_DrawString(1, 9, "2) Check Alarm Log", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
     ST7735_DrawString(1, 10,"3) Check Speed Log", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
-    ST7735_DrawString(1, 11, "4) Exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
-
-    ST7735_FillRect(0, 120, 128, 30, 0);
+    ST7735_DrawString(1, 11, "4) Outside Temp", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+    ST7735_DrawString(1, 12, "5) Exit              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+    ST7735_FillRect(0, 130, 128, 30, 0);
 }
 
 void parseTimeDate(char string[]) {

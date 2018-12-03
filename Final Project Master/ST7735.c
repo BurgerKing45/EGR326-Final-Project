@@ -92,6 +92,8 @@
 #include <stdint.h>
 #include "ST7735.h"
 #include "msp.h"
+/* DriverLib Includes */
+#include "driverlib.h"
 
 // 16 rows (0 to 15) and 21 characters (0 to 20)
 // Requires (11 + size*size*6*8) bytes of transmission for each character
@@ -913,7 +915,7 @@ void ST7735_FillScreen(uint16_t color) {
 // Output: none
 void ST7735_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
   uint8_t hi = color >> 8, lo = color;
-
+  Timer32_disableInterrupt(TIMER32_0_BASE);
   // rudimentary clipping (drawChar w/big text requires this)
   if((x >= _width) || (y >= _height)) return;
   if((x + w - 1) >= _width)  w = _width  - x;
@@ -927,6 +929,8 @@ void ST7735_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
       writedata(lo);
     }
   }
+
+  Timer32_enableInterrupt(TIMER32_0_BASE);
 }
 
 
@@ -1134,7 +1138,8 @@ void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bg
 //        BGcolor: Background color
 // Output: number of characters printed
 uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor, uint16_t size, uint16_t BGcolor ){
-  uint32_t count = 0;
+    Timer32_disableInterrupt(TIMER32_0_BASE);
+    uint32_t count = 0;
   if(y>15) return 0;
   while(*pt){
 	  //ST7735_DrawCharS(x*6, y*10, *pt, textColor, ST7735_BLACK, 1);
@@ -1144,6 +1149,7 @@ uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor, 
     if(x>20) return count;  // number of characters printed
     count++;
   }
+  Timer32_enableInterrupt(TIMER32_0_BASE);
   return count;  // number of characters printed
 }
 

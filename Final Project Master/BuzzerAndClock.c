@@ -29,7 +29,7 @@ Timer_A_PWMConfig pwmConfigA3 =
  4
 };
 
-void InitLCD_Delay(uint32_t period){
+void InitTimeOutDelay(uint32_t period){
 
     MAP_Timer32_initModule(TIMER32_1_BASE, TIMER32_PRESCALER_16, TIMER32_32BIT,
                            TIMER32_PERIODIC_MODE);

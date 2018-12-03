@@ -58,6 +58,10 @@ Final\ Project\ Slave\ main.obj: ../ST7735.h
 Final\ Project\ Slave\ main.obj: ../Backlight.h
 Final\ Project\ Slave\ main.obj: ../BuzzerAndClock.h
 Final\ Project\ Slave\ main.obj: ../UART.h
+Final\ Project\ Slave\ main.obj: ../LEDs_PBs.h
+Final\ Project\ Slave\ main.obj: ../CTS_Layer.h
+Final\ Project\ Slave\ main.obj: ../CTS_HAL.h
+Final\ Project\ Slave\ main.obj: ../structure.h
 
 ../Final\ Project\ Slave\ main.c: 
 C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/driverlib.h: 
@@ -117,3 +121,7 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdarg.h:
 ../Backlight.h: 
 ../BuzzerAndClock.h: 
 ../UART.h: 
+../LEDs_PBs.h: 
+../CTS_Layer.h: 
+../CTS_HAL.h: 
+../structure.h: 

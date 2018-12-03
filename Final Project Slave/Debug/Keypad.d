@@ -51,6 +51,9 @@ Keypad.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/string.h
 Keypad.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/_ti_config.h
 Keypad.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/linkage.h
 Keypad.obj: ../keypad.h
+Keypad.obj: ../CTS_Layer.h
+Keypad.obj: ../CTS_HAL.h
+Keypad.obj: ../structure.h
 
 ../Keypad.c: 
 C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/driverlib.h: 
@@ -103,3 +106,6 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/string.h:
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/_ti_config.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/linkage.h: 
 ../keypad.h: 
+../CTS_Layer.h: 
+../CTS_HAL.h: 
+../structure.h: 

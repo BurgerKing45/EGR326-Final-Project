@@ -1,10 +1,5 @@
-/*
- * -------------------------------------------
- *    MSP432 DriverLib - v3_21_00_05 
- * -------------------------------------------
- *
- * --COPYRIGHT--,BSD,BSD
- * Copyright (c) 2016, Texas Instruments Incorporated
+/* --COPYRIGHT--,BSD
+ * Copyright (c) 2014, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +29,44 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * --/COPYRIGHT--*/
+//*****************************************************************************
+//
+// Copyright (C) 2012 - 2015 Texas Instruments Incorporated - http://www.ti.com/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+//  Redistributions of source code must retain the above copyright
+//  notice, this list of conditions and the following disclaimer.
+//
+//  Redistributions in binary form must reproduce the above copyright
+//  notice, this list of conditions and the following disclaimer in the
+//  documentation and/or other materials provided with the
+//  distribution.
+//
+//  Neither the name of Texas Instruments Incorporated nor the names of
+//  its contributors may be used to endorse or promote products derived
+//  from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// MSP432 Family Interrupt Vector Table for CGT
+//
+//****************************************************************************
+
 #include <stdint.h>
+#include "structure.h"
 
 /* Forward declaration of the default fault handlers. */
 static void resetISR(void);
@@ -55,7 +87,18 @@ extern unsigned long __STACK_END;
 
 
 /* External declarations for the interrupt handlers used by the application. */
+#ifdef RO_CTIO_TA2_WDTA
+extern void WDT_A_IRQHandler(void);
+#endif
+#ifdef RO_CTIO_TA2_TA3
+extern void TA3_0_IRQHandler(void);
+#endif
+#ifdef fRO_CTIO_TA2_TA3
+extern void TA2_0_IRQHandler(void);
+#endif
 extern void EUSCIA1_IRQHandler(void);
+extern void PORT6_IRQHandler(void);
+//extern void T32_INT2_IRQHandler(void);
 /* To be added by user */
 
 
@@ -86,7 +129,11 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* PSS ISR                   */
     defaultISR,                             /* CS ISR                    */
     defaultISR,                             /* PCM ISR                   */
+#ifdef RO_CTIO_TA2_WDTA
+    WDT_A_IRQHandler,                      /* WDT ISR                    */
+#else
     defaultISR,                             /* WDT ISR                   */
+#endif
     defaultISR,                             /* FPU ISR                   */
     defaultISR,                             /* FLCTL ISR                 */
     defaultISR,                             /* COMP0 ISR                 */
@@ -95,9 +142,17 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* TA0_N ISR                 */
     defaultISR,                             /* TA1_0 ISR                 */
     defaultISR,                             /* TA1_N ISR                 */
+#ifdef fRO_CTIO_TA2_TA3
+    TA2_0_IRQHandler,                           /* TA2_0 ISR                 */
+#else
     defaultISR,                             /* TA2_0 ISR                 */
+#endif
     defaultISR,                             /* TA2_N ISR                 */
-    defaultISR,                             /* TA3_0 ISR                 */
+#ifdef RO_CTIO_TA2_TA3
+    TA3_0_IRQHandler,                          /* TA3_0 ISR                 */
+#else
+    defaultISR,                             /*  TA3_0 ISR                */
+#endif
     defaultISR,                             /* TA3_N ISR                 */
     defaultISR,                             /* EUSCIA0 ISR               */
     EUSCIA1_IRQHandler,                             /* EUSCIA1 ISR               */
@@ -123,7 +178,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* PORT3 ISR                 */
     defaultISR,                             /* PORT4 ISR                 */
     defaultISR,                             /* PORT5 ISR                 */
-    defaultISR,                             /* PORT6 ISR                 */
+    PORT6_IRQHandler,                             /* PORT6 ISR                 */
     defaultISR,                             /* Reserved 41               */
     defaultISR,                             /* Reserved 42               */
     defaultISR,                             /* Reserved 43               */

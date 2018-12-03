@@ -36,6 +36,7 @@
 #define TimeEnter 3
 #define AlarmLog  4
 #define SpeedLog  5
+#define OutsideTemp 6
 
 /* Global Variables */
 uint8_t state = 0;
@@ -54,6 +55,7 @@ uint16_t prev_speed = 0;
 uint32_t meas1 = 0;
 uint32_t meas2 = 0;
 uint8_t ProxFlag = 0;
+uint8_t PrevProxFlag = 0;
 uint8_t ProxMeasured = 0;
 
 /* Time, date and temp returnted from the RTC */
@@ -62,6 +64,14 @@ char TimeDate[19];
 uint8_t DisplayStyle = 0;
 
 uint8_t TimeOut = 0;
+
+float OutsideTempVal = 0;
+
+int prev_temp = 0;
+
+int TempVal;
+
+static uint16_t resultsBuffer[2];
 
 /* variables for user keypad input */
 char m_seconds[2];
@@ -108,7 +118,13 @@ char user_entry[] = "xx:xx:xx xx/xx/20xx";
 int main(void) {
 
     /* Stop Watchdog  */
-    MAP_WDT_A_holdTimer();
+   // MAP_WDT_A_holdTimer();
+
+    /* Configuring WDT to timeout after 512k iterations of ACLK, at 128k,
+     * this will roughly equal 4 seconds*/
+    MAP_SysCtl_setWDTTimeoutResetType(SYSCTL_HARD_RESET);
+    MAP_WDT_A_initWatchdogTimer(WDT_A_CLOCKSOURCE_SMCLK,
+                                WDT_A_CLOCKITERATIONS_512K);
 
     while(1) {
 
@@ -127,6 +143,8 @@ int main(void) {
             InitProx();
             InitButton();
 
+            /* Zero-filling buffer */
+            memset(resultsBuffer, 0x00, 8);
 
 
 
@@ -160,13 +178,13 @@ int main(void) {
             StateChanged = 0;
 
             //Idle Display
-            Timer32_haltTimer(TIMER32_0_BASE);
 
-          //  InitLCD_Delay(1500000);
+
+            //  InitLCD_Delay(1500000);
 
             ClearLowerDisplay();
             IdleDisplay();
-            InitTimer32(3000000);
+
 
             //Request keypad info from slave
 
@@ -193,11 +211,11 @@ int main(void) {
 
             //Clear Display and print menu
             // ClearLowerDisplay();
-            Timer32_haltTimer(TIMER32_0_BASE);
+
 
 
             MenuDisplay();
-            InitTimer32(3000000);
+
 
 
             while(!StateChanged){
@@ -219,6 +237,12 @@ int main(void) {
                     rcv_byte = 0;
                 }
                 else if(rcv_byte == '4'){
+                    state = OutsideTemp;
+                    StateChanged = 1;
+                    rcv_byte = 0;
+
+                }
+                else if(rcv_byte == '5'){
                     state = Idle;
                     StateChanged = 1;
                     rcv_byte = 0;
@@ -234,15 +258,16 @@ int main(void) {
             StateChanged = 0;
 
             //Time Enter Display
-            Timer32_haltTimer(TIMER32_0_BASE);
+            //Timer32_haltTimer(TIMER32_0_BASE);
 
             ClearLowerDisplay();
-            InitTimer32(3000000);
+            //InitTimer32(3000000);
             TimeOut = 0;
 
             promptTime();
 
-            writeToRTC();
+            if(!TimeOut) writeToRTC();
+            else TimeOut = 0;
 
             user_entry[0] = 'x';
             user_entry[1] = 'x';
@@ -274,16 +299,17 @@ int main(void) {
 
             break;
 
+
         case AlarmLog :
 
             StateChanged = 0;
             //ClearLowerDisplay();
 
 
-            Timer32_haltTimer(TIMER32_0_BASE);
+
 
             DisplayAlarmLog();
-            InitTimer32(3000000);
+
 
             while(!StateChanged){
 
@@ -305,10 +331,28 @@ int main(void) {
 
 
 
-            Timer32_haltTimer(TIMER32_0_BASE);
-
             DisplaySpeedLog();
-            InitTimer32(3000000);
+
+
+            while(!StateChanged){
+
+                if(rcv_byte == '#'){
+                    state = Idle;
+                    StateChanged = 1;
+                    rcv_byte = 0;
+                }
+
+
+            }
+
+            break;
+
+        case OutsideTemp :
+
+            StateChanged = 0;
+            ClearLowerDisplay();
+
+            DisplayOutsideTemp(26.56);
 
             while(!StateChanged){
 
@@ -340,8 +384,7 @@ void SysTick_Handler(void)
 void T32_INT2_IRQHandler(void){
     MAP_Timer32_clearInterruptFlag(TIMER32_1_BASE);
 
-    //Renable the main interrupt
-  //  InitTimer32(3000000);
+    TimeOut = 1;
 
 
 }
@@ -349,12 +392,15 @@ void T32_INT2_IRQHandler(void){
 void T32_INT1_IRQHandler(void){
     MAP_Timer32_clearInterruptFlag(TIMER32_0_BASE);
 
-    TimeOut = 1;
+    //Clear the WDT
+    MAP_WDT_A_clearTimer();
 
+    MAP_ADC14_toggleConversionTrigger();
     CheckRTC();
     UpdateDisplay(speed, TimeDate, DisplayStyle);
     Update_Speedometer(speed);
     CheckSpeed();
+    CheckTemp();
     //Checking the prox. Disable speed checking
 
     SysTick_disableModule();
@@ -362,7 +408,7 @@ void T32_INT1_IRQHandler(void){
     PulseProx();
 
 
-    MAP_ADC14_toggleConversionTrigger();
+
 
 
 
@@ -371,6 +417,8 @@ void T32_INT1_IRQHandler(void){
 /* interrupt handler for Timer A0 */
 void TA0_N_IRQHandler(void){
     int rising = 0;
+    char ProxTimeDate[13];
+
     if (TIMER_A0->CCTL[1] & BIT0) { // Timer A0.1 was the cause. This is setup as a capture
         Timer_A_clearCaptureCompareInterrupt(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1);  // clear timer_A interrupt flag
 
@@ -390,18 +438,25 @@ void TA0_N_IRQHandler(void){
             meas2 = Timer_A_getCaptureCompareCount(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1); // read timer_A value
             ProxFlag = CheckProx(meas1, meas2);
 
-            if(ProxFlag == 1)
-            {
-                MAP_UART_transmitData(EUSCI_A1_BASE, 3);
-            }
-            else if (ProxFlag == 0)
-            {
-                MAP_UART_transmitData(EUSCI_A1_BASE, 4);
-            }
 
             ProxMeasured = 1;
             InitSysTick(12000000);
             Interrupt_enableInterrupt(INT_PORT3);
+
+            if(  (PrevProxFlag == 0) && (ProxFlag == 1)  ){
+                MAP_UART_transmitData(EUSCI_A1_BASE, 3);
+
+                strncpy(ProxTimeDate, TimeDate, 13);
+
+                WriteToFlash(ProxTimeDate, 1);
+                PrintProxWarning();
+            }
+            else if( (PrevProxFlag == 1) && (ProxFlag == 0) ) {
+                MAP_UART_transmitData(EUSCI_A1_BASE, 4);
+                ClearProxWarning();
+            }
+
+            PrevProxFlag = ProxFlag;
         }
     }
 }
@@ -433,6 +488,15 @@ void EUSCIA1_IRQHandler(void)
     {
         rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
 
+//        if(rcv_byte == 12){
+//            //Do stuff
+//            rcv_byte = NULL;
+//        }
+//        else if(rcv_byte == 13){
+//            rcv_byte = NULL;
+//        }
+
+
 
     }
 
@@ -449,7 +513,7 @@ Timer_A_PWMConfig BacklightpwmConfig =
 {
  TIMER_A_CLOCKSOURCE_SMCLK,
  TIMER_A_CLOCKSOURCE_DIVIDER_1,
- 3000000,
+ 3000,
  TIMER_A_CAPTURECOMPARE_REGISTER_3,
  TIMER_A_OUTPUTMODE_RESET_SET,
  1500,
@@ -461,6 +525,9 @@ void ADC14_IRQHandler(void)
 
     uint16_t Duty_Cycle;
     float cur_ADCResult;
+    float TempADC;
+
+
     uint64_t status;
 
     //Get the status of the ADC interrupt
@@ -468,20 +535,35 @@ void ADC14_IRQHandler(void)
     MAP_ADC14_clearInterruptFlag(status);
 
     //If the interrupt occurred on ADC instance 0, than get the result
-    if(status & ADC_INT0)
-    {
-        //ADC results
+    //    if(status & ADC_INT0)
+    //    {
+    //        //ADC results
+    //
+    //        float normalized_ADCRes;
+    //
+    //        cur_ADCResult = MAP_ADC14_getResult(ADC_MEM0);  //Get ADC conversion result
+    //
+    //        Duty_Cycle = 0.0091 * cur_ADCResult + 4.6514;
+    //
+    //        //Mess with this to change brightness
+    //        BacklightpwmConfig.dutyCycle = 15 * Duty_Cycle;
+    //        MAP_Timer_A_generatePWM(TIMER_A2_BASE, &BacklightpwmConfig);
+    //        normalized_ADCRes = (cur_ADCResult * 3.3) / 16384;    //Normalize that result given Vref = 3.3V and 14 bit ADC
+    //
+    //
+    //    }
+    if(status & ADC_INT1){
 
-        float normalized_ADCRes;
-
-        cur_ADCResult = MAP_ADC14_getResult(ADC_MEM0);  //Get ADC conversion result
+        MAP_ADC14_getMultiSequenceResult(resultsBuffer);
+        cur_ADCResult = resultsBuffer[0];
+        TempADC = resultsBuffer[1];
 
         Duty_Cycle = 0.0091 * cur_ADCResult + 4.6514;
 
         //Mess with this to change brightness
-        BacklightpwmConfig.dutyCycle = 6000 * Duty_Cycle *.01;
+        BacklightpwmConfig.dutyCycle = 15 * Duty_Cycle;
         MAP_Timer_A_generatePWM(TIMER_A2_BASE, &BacklightpwmConfig);
-        normalized_ADCRes = (cur_ADCResult * 3.3) / 16384;    //Normalize that result given Vref = 3.3V and 14 bit ADC
+        OutsideTempVal = ( (TempADC * 3.3) / 16384) * 100;    //Normalize that result given Vref = 3.3V and 14 bit ADC
 
 
     }
@@ -491,36 +573,42 @@ void ADC14_IRQHandler(void)
 void CheckSpeed(void){
     char SpeedTimeDate[13];
 
-            if( (speed >= 85) && (prev_speed < 85) ){
-                MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+    if( (speed >= 85) && (prev_speed < 85) ){
+        //MAP_UART_transmitData(EUSCI_A1_BASE, 1);
 
-                strncpy(SpeedTimeDate, TimeDate, 13);
+        strncpy(SpeedTimeDate, TimeDate, 13);
 
-                WriteToFlash(SpeedTimeDate, 2);
-            }
-            else if( (speed < 85) && (prev_speed >= 85) ) {
-                MAP_UART_transmitData(EUSCI_A1_BASE, 2);
-            }
+        WriteToFlash(SpeedTimeDate, 2);
+    }
+    else if( (speed < 85) && (prev_speed >= 85) ) {
+      //  MAP_UART_transmitData(EUSCI_A1_BASE, 2);
+    }
 
-            prev_speed = speed;
+    prev_speed = speed;
 
 }
 
 void CheckTemp(void){
+    char Temp[5];
     char TempTimeDate[13];
 
-                if( (speed >= 85) && (prev_speed < 85) ){
-                    MAP_UART_transmitData(EUSCI_A1_BASE, 1);
+    strncpy(Temp, TimeDate + 13, 5);
+    TempVal = atoi(Temp);
 
-                    strncpy(TempTimeDate, TimeDate, 13);
+    if( (TempVal >= 15) && (prev_temp < 15) ){
+        MAP_UART_transmitData(EUSCI_A1_BASE, 5);
 
-                    WriteToFlash(TempTimeDate, 1);
-                }
-                else if( (speed < 85) && (prev_speed >= 85) ) {
-                    MAP_UART_transmitData(EUSCI_A1_BASE, 2);
-                }
+        strncpy(TempTimeDate, TimeDate, 13);
 
-                prev_speed = speed;
+ //       WriteToFlash(TempTimeDate, 1);
+        PrintTempWarning();
+    }
+    else if( (TempVal < 15) && (prev_temp >= 15) ) {
+        MAP_UART_transmitData(EUSCI_A1_BASE, 6);
+        ClearTempWarning();
+    }
+
+    prev_temp = TempVal;
 }
 
 void CheckRTC(void){
@@ -530,11 +618,18 @@ void CheckRTC(void){
 
 /* prompts user to enter time and date info */
 void promptTime(void) {
+    InitTimeOutDelay(180000000);
+
     promptSeconds();
+    if(TimeOut) return;
     promptMinutes();
+    if(TimeOut) return;
     promptHours();
+    if(TimeOut) return;
     promptDate();
+    if(TimeOut) return;
     promptMonth();
+    if(TimeOut) return;
     promptYear();
     //    promptDay();
 }
@@ -542,29 +637,54 @@ void promptTime(void) {
 /* prompt user to enter seconds */
 void promptSeconds(void) {
     if (m_seconds[0] == NULL) {
+
+        //Timer32_haltTimer(TIMER32_0_BASE);
+
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 9, "enter seconds (0-59)    ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
+        //InitTimer32(3000000);
 
-
-        while(m_seconds[0] == NULL){
+        while( m_seconds[0] == NULL) {
             m_seconds[0] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
+
+
+
         user_entry[6] = m_seconds[0];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-        rcv_byte = NULL;
 
 
-        while(m_seconds[1] == NULL){
+
+        while( m_seconds[1] == NULL){
             m_seconds[1] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+        rcv_byte = NULL;
+        InitTimeOutDelay(180000000);
+
         user_entry[7] = m_seconds[1];
+
+
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
+
         if (m_seconds[0] < '0' || m_seconds[0] > '5' || m_seconds[1] < '0' || m_seconds[1] > '9') {
+
             ST7735_DrawString(1, 10, "invalid number", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
             __delay_cycles(48000000);  // delay for 1 second
             m_seconds[0] = NULL;
             m_seconds[1] = NULL;
@@ -581,16 +701,28 @@ void promptSeconds(void) {
 /* prompt user to enter minutes*/
 void promptMinutes(void) {
     if (m_minutes[0] == NULL) {
+
+        //Timer32_haltTimer(TIMER32_0_BASE);
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 9, "enter minutes (0-59)    ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-
+        //InitTimer32(3000000);
 
         while(m_minutes[0] == NULL){
             m_minutes[0] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
+
         user_entry[3] = m_minutes[0];
+
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
         rcv_byte = NULL;
@@ -598,12 +730,24 @@ void promptMinutes(void) {
 
         while(m_minutes[1] == NULL){
             m_minutes[1] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
         user_entry[4] = m_minutes[1];
+
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
+
         if (m_minutes[0] < '0' || m_minutes[0] > '5' || m_minutes[1] < '0' || m_minutes[1] > '9') {
+
             ST7735_DrawString(1, 10, "invalid number", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
             __delay_cycles(48000000);  // delay for 1 second
             m_minutes[0] = NULL;
             m_minutes[1] = NULL;
@@ -620,24 +764,41 @@ void promptMinutes(void) {
 /* prompt user to enter hours */
 void promptHours(void) {
     if (m_hours[0] == NULL) {
+        //Timer32_haltTimer(TIMER32_0_BASE);
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 9, "enter hours (1-24)    ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-
+        //InitTimer32(3000000);
 
         while(m_hours[0] == NULL){
             m_hours[0] = rcv_byte;
-        };
-        user_entry[0] = m_hours[0];
-        ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
+            if(TimeOut){
+                return;
+            }
+        }
 
         rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
+
+        user_entry[0] = m_hours[0];
+        ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 
         while(m_hours[1] == NULL){
             m_hours[1] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
+
         user_entry[1] = m_hours[1];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
@@ -660,24 +821,43 @@ void promptHours(void) {
 /* prompt user to enter date */
 void promptDate(void) {
     if (m_date[0] == NULL) {
+
+        //Timer32_haltTimer(TIMER32_0_BASE);
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 9, "enter date (1-31)    ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-
+        //InitTimer32(3000000);
 
         while(m_date[0] == NULL){
             m_date[0] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
+
         user_entry[12] = m_date[0];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-        rcv_byte = NULL;
+
 
 
         while(m_date[1] == NULL){
             m_date[1] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+
+        rcv_byte = NULL;
+        InitTimeOutDelay(180000000);
+
         user_entry[13] = m_date[1];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
@@ -699,25 +879,41 @@ void promptDate(void) {
 
 /* prompt user to enter month */
 void promptMonth(void) {
+
     if (m_month[0] == NULL) {
+        //Timer32_haltTimer(TIMER32_0_BASE);
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 9, "enter month (1-12)    ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-
+        //InitTimer32(3000000);
 
         while(m_month[0] == NULL){
             m_month[0] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
         user_entry[9] = m_month[0];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-        rcv_byte = NULL;
+
 
 
         while(m_month[1] == NULL){
             m_month[1] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+        rcv_byte = NULL;
+
+        InitTimeOutDelay(180000000);
         user_entry[10] = m_month[1];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
@@ -740,24 +936,39 @@ void promptMonth(void) {
 /* prompt user to enter year */
 void promptYear(void) {
     if (m_year[0] == NULL) {
+        //Timer32_haltTimer(TIMER32_0_BASE);
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 9, "enter year (0-99)    ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
         ST7735_DrawString(1, 10, "              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-
+        //InitTimer32(3000000);
 
         while(m_year[0] == NULL){
             m_year[0] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+        rcv_byte = NULL;
+        InitTimeOutDelay(180000000);
+
         user_entry[17] = m_year[0];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
-        rcv_byte = NULL;
+
 
 
         while(m_year[1] == NULL){
             m_year[1] = rcv_byte;
-        };
+
+            if(TimeOut){
+                return;
+            }
+        }
+        rcv_byte = NULL;
+        InitTimeOutDelay(180000000);
+
         user_entry[18] = m_year[1];
         ST7735_DrawString(1, 8, user_entry, ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
@@ -799,6 +1010,7 @@ void InitButton(void){
     MAP_GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1 );
     MAP_Interrupt_enableInterrupt(INT_PORT1);
 }
+
 
 ///* prompt user to enter day */
 //void promptDay(void) {
