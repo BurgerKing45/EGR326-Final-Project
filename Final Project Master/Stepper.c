@@ -32,19 +32,21 @@ void InitStepper(void);
 
 /*Updates the speedometer */
 void Update_Speedometer(uint16_t speed){
+    uint16_t speed_dif;
     uint16_t steps;
     static uint16_t CurrentSpeed = 0;
 
     if(CurrentSpeed <= speed){
-        steps = speed - CurrentSpeed;
-
+        speed_dif = speed - CurrentSpeed;
+        steps = speed_dif * 3 / 4;
         stepper_move(steps, 0);
-        CurrentSpeed = CurrentSpeed + steps;
+        CurrentSpeed = CurrentSpeed + speed_dif;
     }
     else if(CurrentSpeed > speed){
-        steps = CurrentSpeed - speed;
+        speed_dif = CurrentSpeed - speed;
+        steps = speed_dif * 3 / 4;
         stepper_move(steps, 1);
-        CurrentSpeed = CurrentSpeed - steps;
+        CurrentSpeed = CurrentSpeed - speed_dif;
     }
 
 
@@ -58,7 +60,7 @@ void InitStepper(void){
     MAP_GPIO_setAsOutputPin(GPIO_PORT_P7, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2 | GPIO_PIN3);
 
     /* Zero the speedometer */
-    stepper_move(160, 1);
+    stepper_move(100, 1);
 
 }
 

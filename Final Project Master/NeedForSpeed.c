@@ -40,8 +40,10 @@ void InitSysTick(uint32_t delay){
 }
 
 uint16_t Convert_Speed(uint16_t total_counts){
-    uint16_t speed;
+    int16_t speed;
+
     speed = 2 * total_counts;
+
 
     return speed;
 

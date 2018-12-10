@@ -1,7 +1,7 @@
 ******************************************************************************
                   TI ARM Linker PC v18.1.3                     
 ******************************************************************************
->> Linked Sun Dec  2 21:49:46 2018
+>> Linked Mon Dec 10 12:46:53 2018
 
 OUTPUT FILE NAME:   <Final Project Slave.out>
 ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00001df1
@@ -11,24 +11,24 @@ MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  MAIN                  00000000   00040000  00002067  0003df99  R  X
+  MAIN                  00000000   00040000  0000206f  0003df91  R  X
   INFO                  00200000   00004000  00000000  00004000  R  X
   SRAM_CODE             01000000   00010000  00000000  00010000  RW X
-  SRAM_DATA             20000000   00010000  00000aca  0000f536  RW  
+  SRAM_DATA             20000000   00010000  00000acc  0000f534  RW  
 
 
 SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    00002070   00002070    r-x
+00000000    00000000    00002078   00002078    r-x
   00000000    00000000    00000140   00000140    r-- .intvecs
   00000140    00000140    00001e4e   00001e4e    r-x .text
   00001f90    00001f90    00000051   00000051    r-- .const
-  00001fe8    00001fe8    00000088   00000088    r-- .cinit
+  00001fe8    00001fe8    00000090   00000090    r-- .cinit
 20000000    20000000    000008cc   00000000    rw-
   20000000    20000000    00000800   00000000    rw- .sysmem
-  20000800    20000800    000000b6   00000000    rw- .data
+  20000800    20000800    000000b8   00000000    rw- .data
   200008b8    200008b8    00000014   00000000    rw- .bss
 2000fe00    2000fe00    00000200   00000000    rw-
   2000fe00    2000fe00    00000200   00000000    rw- .stack
@@ -45,9 +45,9 @@ section   page    origin      length       input sections
 .text      0    00000140    00001e4e     
                   00000140    00000a9c     CTS_Layer.obj (.text)
                   00000bdc    00000328     system_msp432p401r.obj (.text)
-                  00000f04    0000023c     Keypad.obj (.text)
-                  00001140    00000200     CTS_HAL.obj (.text)
-                  00001340    000001ac     Final Project Slave main.obj (.text)
+                  00000f04    0000022c     Keypad.obj (.text)
+                  00001130    00000200     CTS_HAL.obj (.text)
+                  00001330    000001bc     Final Project Slave main.obj (.text)
                   000014ec    00000164     BuzzerAndClock.obj (.text)
                   00001650    0000011c     LEDs_PBs.obj (.text)
                   0000176c    00000104     msp432p4xx_driverlib.lib : cs.o (.text:CS_getDCOFrequency)
@@ -90,11 +90,13 @@ section   page    origin      length       input sections
                   00001fd8    00000006     structure.obj (.const:my_element)
                   00001fde    00000003     Keypad.obj (.const:.string:$P$T0$1)
 
-.cinit     0    00001fe8    00000088     
-                  00001fe8    00000064     (.cinit..data.load) [load image, compression = lzss]
-                  0000204c    0000000c     (__TI_handler_table)
-                  00002058    00000008     (.cinit..bss.load) [load image, compression = zero_init]
-                  00002060    00000010     (__TI_cinit_table)
+.cinit     0    00001fe8    00000090     
+                  00001fe8    00000066     (.cinit..data.load) [load image, compression = lzss]
+                  0000204e    00000002     --HOLE-- [fill = 0]
+                  00002050    0000000c     (__TI_handler_table)
+                  0000205c    00000004     --HOLE-- [fill = 0]
+                  00002060    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00002068    00000010     (__TI_cinit_table)
 
 .init_array 
 *          0    00000000    00000000     UNINITIALIZED
@@ -103,18 +105,17 @@ section   page    origin      length       input sections
                   20000000    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : memory.c.obj (.sysmem)
                   20000008    000007f8     --HOLE--
 
-.data      0    20000800    000000b6     UNINITIALIZED
+.data      0    20000800    000000b8     UNINITIALIZED
                   20000800    00000030     msp432p4xx_driverlib.lib : gpio.o (.data:GPIO_PORT_TO_BASE)
                   20000830    00000018     BuzzerAndClock.obj (.data:pwmConfigA0)
                   20000848    00000018     BuzzerAndClock.obj (.data:pwmConfigA3)
                   20000860    00000018     LEDs_PBs.obj (.data:pwmConfigLeft)
                   20000878    00000018     LEDs_PBs.obj (.data:pwmConfigRight)
                   20000890    00000018     LEDs_PBs.obj (.data:pwmConfigWarning)
-                  200008a8    00000005     Final Project Slave main.obj (.data)
-                  200008ad    00000001     --HOLE--
-                  200008ae    00000002     CTS_Layer.obj (.data)
+                  200008a8    00000008     Final Project Slave main.obj (.data)
                   200008b0    00000004     system_msp432p401r.obj (.data)
-                  200008b4    00000002     Keypad.obj (.data)
+                  200008b4    00000002     CTS_Layer.obj (.data)
+                  200008b6    00000002     Keypad.obj (.data)
 
 .bss       0    200008b8    00000014     UNINITIALIZED
                   200008b8    00000008     (.common:measCnt)
@@ -133,16 +134,16 @@ MODULE SUMMARY
     .\
        CTS_Layer.obj                  2716   0         14     
        system_msp432p401r.obj         808    0         4      
-       Keypad.obj                     572    3         2      
+       Keypad.obj                     556    3         2      
        CTS_HAL.obj                    512    0         0      
-       Final Project Slave main.obj   428    0         5      
+       Final Project Slave main.obj   444    0         8      
        BuzzerAndClock.obj             356    0         48     
        LEDs_PBs.obj                   284    0         72     
        startup_msp432p401r_ccs.obj    18     320       0      
        UART.obj                       108    36        0      
        structure.obj                  0      42        0      
     +--+------------------------------+------+---------+---------+
-       Total:                         5802   401       145    
+       Total:                         5802   401       148    
                                                               
     C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/ccs/msp432p4xx_driverlib.lib
        cs.o                           966    0         8      
@@ -168,21 +169,21 @@ MODULE SUMMARY
                                                               
        Heap:                          0      0         2048   
        Stack:                         0      0         512    
-       Linker Generated:              0      136       0      
+       Linker Generated:              0      138       0      
     +--+------------------------------+------+---------+---------+
-       Grand Total:                   7756   537       2761   
+       Grand Total:                   7756   539       2764   
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00002060 records: 2, size/record: 8, table size: 16
-	.data: load addr=00001fe8, load size=00000064 bytes, run addr=20000800, run size=000000b6 bytes, compression=lzss
-	.bss: load addr=00002058, load size=00000008 bytes, run addr=200008b8, run size=00000014 bytes, compression=zero_init
+__TI_cinit_table @ 00002068 records: 2, size/record: 8, table size: 16
+	.data: load addr=00001fe8, load size=00000066 bytes, run addr=20000800, run size=000000b8 bytes, compression=lzss
+	.bss: load addr=00002060, load size=00000008 bytes, run addr=200008b8, run size=00000014 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 0000204c records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 00002050 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_lzss
 	index: 1, handler: __TI_decompress_none
 	index: 2, handler: __TI_zero_init
@@ -201,20 +202,20 @@ address   name
 00001efd  CS_setExternalClockSourceFrequency
 00001f81  CS_startHFXT                      
 0000196d  CS_startHFXTWithTimeout           
-200008b4  CapLatch                          
 00000ad1  Dominant_Element                  
-000013e9  EUSCIA1_IRQHandler                
+000013d9  EUSCIA1_IRQHandler                
 00001ee5  GPIO_clearInterruptFlag           
 00001e29  GPIO_getEnabledInterruptStatus    
 00001f35  GPIO_getInterruptStatus           
 0000169b  InitTimerA                        
 00001651  InitTurnSignalButtons             
 00001bb1  InitUART                          
+200008ac  IntFlag                           
 200008a9  KeyFlag                           
 200008a8  KeyPressed                        
-200008ab  LeftFlag                          
-00001467  PORT6_IRQHandler                  
-200008ac  RightFlag                         
+200008ae  LeftFlag                          
+0000145d  PORT6_IRQHandler                  
+200008af  RightFlag                         
 000014ed  StartBuzzer                       
 000016af  StartLeft                         
 000016c9  StartRight                        
@@ -240,17 +241,17 @@ address   name
 000001fd  TI_CAPT_Update_Tracking_DOI       
 00000225  TI_CAPT_Update_Tracking_Rate      
 00000853  TI_CAPT_Wheel                     
-000011db  TI_CTS_RO_CTIO_TA2_WDTA_HAL       
+000011cb  TI_CTS_RO_CTIO_TA2_WDTA_HAL       
 200008aa  TransmissionFlag                  
 4000480c  WDTCTL_SYM                        
-00001315  WDT_A_IRQHandler                  
+00001305  WDT_A_IRQHandler                  
 20010000  __STACK_END                       
 00000200  __STACK_SIZE                      
 00000800  __SYSMEM_SIZE                     
-00002060  __TI_CINIT_Base                   
-00002070  __TI_CINIT_Limit                  
-0000204c  __TI_Handler_Table_Base           
-00002058  __TI_Handler_Table_Limit          
+00002068  __TI_CINIT_Base                   
+00002078  __TI_CINIT_Limit                  
+00002050  __TI_Handler_Table_Base           
+0000205c  __TI_Handler_Table_Limit          
 00001d69  __TI_auto_init_nobinit_nopinit    
 00001c1d  __TI_decompress_lzss              
 00001f65  __TI_decompress_none              
@@ -277,11 +278,11 @@ UNDEFED   _system_post_cinit
 200008c0  baseCnt                           
 ffffffff  binit                             
 00001589  clockInit48MHzXTL                 
-200008ae  ctsStatusReg                      
+200008b4  ctsStatusReg                      
 000010b1  getKey                            
 00000f05  initKeypad                        
 00000000  interruptVectors                  
-00001341  main                              
+00001331  main                              
 200008b8  measCnt                           
 00001aa5  memcpy                            
 00001f90  my_button                         
@@ -319,11 +320,11 @@ address   name
 00000f05  initKeypad                        
 00000f6b  scanKeypad                        
 000010b1  getKey                            
-000011db  TI_CTS_RO_CTIO_TA2_WDTA_HAL       
-00001315  WDT_A_IRQHandler                  
-00001341  main                              
-000013e9  EUSCIA1_IRQHandler                
-00001467  PORT6_IRQHandler                  
+000011cb  TI_CTS_RO_CTIO_TA2_WDTA_HAL       
+00001305  WDT_A_IRQHandler                  
+00001331  main                              
+000013d9  EUSCIA1_IRQHandler                
+0000145d  PORT6_IRQHandler                  
 000014ed  StartBuzzer                       
 0000155b  StopBuzzer                        
 00001589  clockInit48MHzXTL                 
@@ -369,10 +370,10 @@ address   name
 00001f90  my_button                         
 00001fb4  uartConfig                        
 00001fd8  my_element                        
-0000204c  __TI_Handler_Table_Base           
-00002058  __TI_Handler_Table_Limit          
-00002060  __TI_CINIT_Base                   
-00002070  __TI_CINIT_Limit                  
+00002050  __TI_Handler_Table_Base           
+0000205c  __TI_Handler_Table_Limit          
+00002068  __TI_CINIT_Base                   
+00002078  __TI_CINIT_Limit                  
 20000000  _sys_memory                       
 20000830  pwmConfigA0                       
 20000848  pwmConfigA3                       
@@ -382,11 +383,11 @@ address   name
 200008a8  KeyPressed                        
 200008a9  KeyFlag                           
 200008aa  TransmissionFlag                  
-200008ab  LeftFlag                          
-200008ac  RightFlag                         
-200008ae  ctsStatusReg                      
+200008ac  IntFlag                           
+200008ae  LeftFlag                          
+200008af  RightFlag                         
 200008b0  SystemCoreClock                   
-200008b4  CapLatch                          
+200008b4  ctsStatusReg                      
 200008b8  measCnt                           
 200008c0  baseCnt                           
 2000fe00  __stack                           

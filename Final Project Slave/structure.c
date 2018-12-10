@@ -54,15 +54,15 @@ const struct Element my_element = {
 		// to selected measurement configuration
 #ifdef RO_CTIO_TA2_WDTA
         //.maxResponse = 300+655,
-        .threshold = 300
+        .threshold = 450
 #endif
 #ifdef RO_CTIO_TA2_TA3
 		//.maxResponse = 250+300,
-		.threshold = 250
+		.threshold = 300
 #endif
 #ifdef fRO_CTIO_TA2_TA3
 		//.maxResponse = 250+250,
-		.threshold = 250
+		.threshold = 300
 #endif
 };
 

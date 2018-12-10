@@ -180,7 +180,7 @@ char* ReadFromFlash(uint8_t WhichLog){
         addr_pointer = CALIBRATION_START + 4;
     }
     else if(WhichLog == 2){
-        addr_pointer = CALIBRATION_START + 4 + 65;
+        addr_pointer = CALIBRATION_START + 4 + 65 + 13;
     }
     /* read 65 bytes from the sector */
     for(i=0; i<65; i++) {
@@ -206,6 +206,7 @@ void WriteToFlash( char* InfoToWrite, uint8_t WhichLog){
     for(i=0; i<65; i++) {
         currentFlashAlarm[i] = *addr_pointer++;
     }
+    addr_pointer = addr_pointer + 13;
     for(i=0; i<65; i++) {
         currentFlashSpeed[i] = *addr_pointer++;
     }
@@ -222,16 +223,16 @@ void WriteToFlash( char* InfoToWrite, uint8_t WhichLog){
 
         /* Program the rest of the flash with the previous 4 log entries. */
         while (!MAP_FlashCtl_programMemory(currentFlashAlarm, (void*) CALIBRATION_START+17, 52 ));
-        while (!MAP_FlashCtl_programMemory(currentFlashSpeed, (void*) CALIBRATION_START+17+65, 65 ));
+        while (!MAP_FlashCtl_programMemory(currentFlashSpeed, (void*) CALIBRATION_START+17 + 52 + 13, 65 ));
     }
 
     if(WhichLog == 2){
         while (!MAP_FlashCtl_programMemory(currentFlashAlarm, (void*) CALIBRATION_START+4, 65 ));
         /* Program the flash with the current time and date info. */
-        while (!MAP_FlashCtl_programMemory(InfoToWrite, (void*) CALIBRATION_START + 4 + 65, 13 ));
+        while (!MAP_FlashCtl_programMemory(InfoToWrite, (void*) CALIBRATION_START + 4 + 65 +13, 13 ));
 
         /* Program the rest of the flash with the previous 4 log entries. */
-        while (!MAP_FlashCtl_programMemory(currentFlashSpeed, (void*) CALIBRATION_START+17+65, 52 ));
+        while (!MAP_FlashCtl_programMemory(currentFlashSpeed, (void*) CALIBRATION_START+17+65 + 13, 52 ));
 
     }
     /* Setting the sector back to protected */

@@ -33,6 +33,8 @@ char KeyPressed = NULL;
 uint8_t KeyFlag = 0;
 uint8_t TransmissionFlag = 0;
 
+extern uint16_t IntFlag = 0;
+
 uint8_t LeftFlag = 0;
 uint8_t RightFlag = 0;
 
@@ -94,6 +96,8 @@ void EUSCIA1_IRQHandler(void)
 
     MAP_UART_clearInterruptFlag(EUSCI_A1_BASE, status);
 
+    IntFlag = 1;
+
     if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
     {
         rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
@@ -110,7 +114,7 @@ void EUSCIA1_IRQHandler(void)
         }
         //Prox triggered condition
         else if(rcv_byte == 3){
-            StartBuzzer(10);
+            StartBuzzer(12);
             StartWarning();
 
         }
@@ -129,6 +133,8 @@ void PORT6_IRQHandler(void){
     GPIO_clearInterruptFlag(GPIO_PORT_P6, status);
 
     //Turn on left turn signal
+    IntFlag = 1;
+
     if(status & GPIO_PIN4){
 
         if(LeftFlag == 0){

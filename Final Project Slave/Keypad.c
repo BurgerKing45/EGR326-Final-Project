@@ -11,7 +11,10 @@
 #include "msp.h"
 #include "CTS_Layer.h"
 
-uint8_t CapLatch = 0;
+
+
+#include "Final Project Slave.h"
+
 
 /* initialize keypad, use P4.0 - P4.6 */
 void initKeypad(void) {
@@ -86,32 +89,82 @@ char getKey (void)
     char key;
     static char prev_key = NULL;
     char confirmed_key;
+    static uint8_t CapFlag = 0;
+    static uint8_t CapLatch = 0;
 
     //Continue this loop until keypad data is received
     while(1)
     {
-        if( TI_CAPT_Button(&my_button) ){
-           //MAP_UART_transmitData(EUSCI_A1_BASE, 12);
-            P1OUT |= BIT0;
-            CapLatch = 1;
-        }
-        else if( !(TI_CAPT_Button(&my_button))  ){
-         //  MAP_UART_transmitData(EUSCI_A1_BASE, 13);
-            CapLatch = 0;
-            P1OUT &= ~BIT0;
-        }
+
 
         //key is returned from getKey
         key = scanKeypad();
         //Detect rising edge of key press. Only accept entry of a pressed key if the
         //previous value from getKey was NULL, which occurs when no key is pressed. This
         //prevents the same key press from being recorded multiple times
+
+        IntFlag = 0;
+        if( TI_CAPT_Button(&my_button) ){
+            //P1OUT |= BIT0;
+            CapLatch = 1;
+           // CapFlag = 1;
+            if(IntFlag == 0){
+            key = 12;
+            }
+        }
+        else{
+            //MAP_UART_transmitData(EUSCI_A1_BASE, 13);
+            //CapLatch = 0;
+            if(IntFlag == 0){
+            //P1OUT &= ~BIT0;
+            }
+            //CapFlag = 2;
+           // key = 13;
+        }
+//
+//        if( !(P6IN & BIT4) ){
+//
+//            if(LeftFlag == 0){
+//                LeftFlag = 1;
+//                StartLeft();
+//            }
+//            else{
+//                LeftFlag = 0;
+//                StopLeft();
+//            }
+//
+//
+//        }
+//
+//        //Turn on right turn signal
+//        if( !(P6IN & BIT5) ){
+//
+//            if(RightFlag == 0){
+//                RightFlag = 1;
+//                StartRight();
+//            }
+//            else{
+//                RightFlag = 0;
+//                StopRight();
+//            }
+//        }
+
         if (key != NULL && prev_key == NULL) {
             confirmed_key = key;
             prev_key = confirmed_key;
             return confirmed_key;
         }
         prev_key = key; //Set previous key as key, to detect rising edge of key press.
+
+//        if(CapFlag == 1){
+//            CapFlag = 0;
+//            MAP_UART_transmitData(EUSCI_A1_BASE, 12);
+//            //return 12;
+//        }
+//        else if(CapFlag == 2){
+//            CapFlag = 0;
+//            MAP_UART_transmitData(EUSCI_A1_BASE, 13);
+//        }
     }
 }
 

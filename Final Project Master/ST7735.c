@@ -1146,7 +1146,10 @@ uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor, 
 	  ST7735_DrawCharS(x*6, y*10, *pt, textColor, BGcolor, size);
     pt++;
     x = x+size;
-    if(x>20) return count;  // number of characters printed
+    if(x>20){
+        Timer32_enableInterrupt(TIMER32_0_BASE);
+        return count;  // number of characters printed
+    }
     count++;
   }
   Timer32_enableInterrupt(TIMER32_0_BASE);

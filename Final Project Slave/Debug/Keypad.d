@@ -54,6 +54,7 @@ Keypad.obj: ../keypad.h
 Keypad.obj: ../CTS_Layer.h
 Keypad.obj: ../CTS_HAL.h
 Keypad.obj: ../structure.h
+Keypad.obj: ../Final\ Project\ Slave.h
 
 ../Keypad.c: 
 C:/ti/msp/MSP432Ware_3_50_00_02/driverlib/driverlib/MSP432P4xx/driverlib.h: 
@@ -109,3 +110,4 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/linkage.h:
 ../CTS_Layer.h: 
 ../CTS_HAL.h: 
 ../structure.h: 
+../Final\ Project\ Slave.h: 

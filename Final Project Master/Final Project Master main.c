@@ -70,8 +70,11 @@ float OutsideTempVal = 0;
 int prev_temp = 0;
 
 int TempVal;
+uint16_t TempCompare = 43;
 
 static uint16_t resultsBuffer[2];
+
+uint8_t WDT_Flag = 0;
 
 /* variables for user keypad input */
 char m_seconds[2];
@@ -118,13 +121,14 @@ char user_entry[] = "xx:xx:xx xx/xx/20xx";
 int main(void) {
 
     /* Stop Watchdog  */
-   // MAP_WDT_A_holdTimer();
+    //MAP_WDT_A_holdTimer();
 
-    /* Configuring WDT to timeout after 512k iterations of ACLK, at 128k,
-     * this will roughly equal 4 seconds*/
+    /* Configuring WDT to timeout after 512k */
     MAP_SysCtl_setWDTTimeoutResetType(SYSCTL_HARD_RESET);
     MAP_WDT_A_initWatchdogTimer(WDT_A_CLOCKSOURCE_SMCLK,
-                                WDT_A_CLOCKITERATIONS_512K);
+                                WDT_A_CLOCKITERATIONS_8192K);
+
+
 
     while(1) {
 
@@ -142,6 +146,8 @@ int main(void) {
             InitStepper();
             InitProx();
             InitButton();
+
+            MAP_WDT_A_startTimer();
 
             /* Zero-filling buffer */
             memset(resultsBuffer, 0x00, 8);
@@ -190,6 +196,7 @@ int main(void) {
 
 
             while(!StateChanged){
+                //MAP_WDT_A_clearTimer();
 
                 if(rcv_byte == '*'){
                     state = Menu;
@@ -266,7 +273,10 @@ int main(void) {
 
             promptTime();
 
-            if(!TimeOut) writeToRTC();
+            if(!TimeOut){
+                writeToRTC();
+                DisplayStyle = 0;
+            }
             else TimeOut = 0;
 
             user_entry[0] = 'x';
@@ -352,7 +362,7 @@ int main(void) {
             StateChanged = 0;
             ClearLowerDisplay();
 
-            DisplayOutsideTemp(26.56);
+            DisplayOutsideTemp(OutsideTempVal);
 
             while(!StateChanged){
 
@@ -390,14 +400,25 @@ void T32_INT2_IRQHandler(void){
 }
 /* Timer32 ISR */
 void T32_INT1_IRQHandler(void){
+    static uint16_t prev_speed;
+
     MAP_Timer32_clearInterruptFlag(TIMER32_0_BASE);
 
     //Clear the WDT
-    MAP_WDT_A_clearTimer();
+    if( !WDT_Flag){
+        MAP_WDT_A_clearTimer();
+    }
+
+
 
     MAP_ADC14_toggleConversionTrigger();
     CheckRTC();
+
+    if (abs(speed - prev_speed) <= 2) {
+        speed = prev_speed;
+    }
     UpdateDisplay(speed, TimeDate, DisplayStyle);
+    prev_speed = speed;
     Update_Speedometer(speed);
     CheckSpeed();
     CheckTemp();
@@ -488,13 +509,13 @@ void EUSCIA1_IRQHandler(void)
     {
         rcv_byte = MAP_UART_receiveData(EUSCI_A1_BASE);
 
-//        if(rcv_byte == 12){
-//            //Do stuff
-//            rcv_byte = NULL;
-//        }
-//        else if(rcv_byte == 13){
-//            rcv_byte = NULL;
-//        }
+        if(rcv_byte == 12){
+            DisplayStyle = DisplayStyle + 1;
+
+            if(DisplayStyle == 3) DisplayStyle = 0;
+            rcv_byte = NULL;
+        }
+
 
 
 
@@ -534,24 +555,6 @@ void ADC14_IRQHandler(void)
     status = MAP_ADC14_getEnabledInterruptStatus();
     MAP_ADC14_clearInterruptFlag(status);
 
-    //If the interrupt occurred on ADC instance 0, than get the result
-    //    if(status & ADC_INT0)
-    //    {
-    //        //ADC results
-    //
-    //        float normalized_ADCRes;
-    //
-    //        cur_ADCResult = MAP_ADC14_getResult(ADC_MEM0);  //Get ADC conversion result
-    //
-    //        Duty_Cycle = 0.0091 * cur_ADCResult + 4.6514;
-    //
-    //        //Mess with this to change brightness
-    //        BacklightpwmConfig.dutyCycle = 15 * Duty_Cycle;
-    //        MAP_Timer_A_generatePWM(TIMER_A2_BASE, &BacklightpwmConfig);
-    //        normalized_ADCRes = (cur_ADCResult * 3.3) / 16384;    //Normalize that result given Vref = 3.3V and 14 bit ADC
-    //
-    //
-    //    }
     if(status & ADC_INT1){
 
         MAP_ADC14_getMultiSequenceResult(resultsBuffer);
@@ -563,7 +566,7 @@ void ADC14_IRQHandler(void)
         //Mess with this to change brightness
         BacklightpwmConfig.dutyCycle = 15 * Duty_Cycle;
         MAP_Timer_A_generatePWM(TIMER_A2_BASE, &BacklightpwmConfig);
-        OutsideTempVal = ( (TempADC * 3.3) / 16384) * 100;    //Normalize that result given Vref = 3.3V and 14 bit ADC
+        OutsideTempVal = ( ( (TempADC * 3.3) / 16384) * 100) - 59;    //Normalize that result given Vref = 3.3V and 14 bit ADC
 
 
     }
@@ -581,7 +584,7 @@ void CheckSpeed(void){
         WriteToFlash(SpeedTimeDate, 2);
     }
     else if( (speed < 85) && (prev_speed >= 85) ) {
-      //  MAP_UART_transmitData(EUSCI_A1_BASE, 2);
+        //  MAP_UART_transmitData(EUSCI_A1_BASE, 2);
     }
 
     prev_speed = speed;
@@ -595,16 +598,16 @@ void CheckTemp(void){
     strncpy(Temp, TimeDate + 13, 5);
     TempVal = atoi(Temp);
 
-    if( (TempVal >= 15) && (prev_temp < 15) ){
-        MAP_UART_transmitData(EUSCI_A1_BASE, 5);
+    if( (TempVal >= TempCompare) && (prev_temp < TempCompare) ){
+        MAP_UART_transmitData(EUSCI_A1_BASE, 1);
 
         strncpy(TempTimeDate, TimeDate, 13);
 
- //       WriteToFlash(TempTimeDate, 1);
+        WriteToFlash(TempTimeDate, 1);
         PrintTempWarning();
     }
-    else if( (TempVal < 15) && (prev_temp >= 15) ) {
-        MAP_UART_transmitData(EUSCI_A1_BASE, 6);
+    else if( (TempVal < TempCompare) && (prev_temp >= TempCompare) ) {
+        MAP_UART_transmitData(EUSCI_A1_BASE, 2);
         ClearTempWarning();
     }
 
@@ -993,42 +996,34 @@ void PORT1_IRQHandler(void){
     uint32_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P1);
     GPIO_clearInterruptFlag(GPIO_PORT_P1, status);
 
+    MAP_WDT_A_clearTimer();
     if(status & GPIO_PIN1){
 
-        DisplayStyle = DisplayStyle + 1;
+        WDT_Flag = 1;
 
-        if(DisplayStyle == 3) DisplayStyle = 0;
-
+    }
+    else if(status & GPIO_PIN4){
+        if(TempCompare == 43){
+            TempCompare = 15;
+            prev_temp = TempCompare - 1;
+        }
+        else {
+            TempCompare = 43;
+            prev_temp = TempCompare + 1;
+        }
 
     }
 
 }
 
 void InitButton(void){
-    MAP_GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1 );
-    MAP_GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1 );
-    MAP_GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1 );
+    MAP_GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1 | GPIO_PIN4 );
+    MAP_GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1 | GPIO_PIN4 );
+    MAP_GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1 | GPIO_PIN4 );
     MAP_Interrupt_enableInterrupt(INT_PORT1);
 }
 
 
-///* prompt user to enter day */
-//void promptDay(void) {
-//    if (day[0] == NULL) {
-//        printf("please enter day (1-7, Sunday is 1) \n");
-//
-//        day[0] = getKey();
-//
-//        if (day[0] < '1' || day[0] > '7') {
-//            printf("invalid number \n");
-//            day[0] = NULL;
-//            promptDay();
-//        }
-//        else {
-//            printf("day enter: %s \n", day);
-//            return;
-//        }
-//    }
-//}
+
 
 

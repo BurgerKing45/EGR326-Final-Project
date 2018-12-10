@@ -40,9 +40,9 @@ void DisplayOutsideTemp(float OutTemp){
 
     snprintf(formattedOutTemp, sizeof formattedOutTemp, "%6.3fC ", OutTemp);
 
-    ST7735_DrawString(3, 9, formattedOutTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
+    ST7735_DrawString(4, 9, formattedOutTemp, ST7735_Color565(0xFF, 0xFF, 0xFF), 2, 0);
 
-    ST7735_DrawString(1, 14, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+    ST7735_DrawString(1, 13, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 }
 
@@ -52,7 +52,7 @@ void ClearDisplay(void){
 }
 
 void ClearLowerDisplay(void){
-    ST7735_FillRect(0, 80, 128, 70, 0);
+    ST7735_FillRect(0, 80, 128, 60, 0);
 }
 
 void PrintProxWarning(void){
@@ -146,7 +146,8 @@ void MenuDisplay(void){
     ST7735_DrawString(1, 10,"3) Check Speed Log", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
     ST7735_DrawString(1, 11, "4) Outside Temp", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
     ST7735_DrawString(1, 12, "5) Exit              ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
-    ST7735_FillRect(0, 130, 128, 30, 0);
+    ST7735_DrawString(1, 13, "                         ", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+
 }
 
 void parseTimeDate(char string[]) {
@@ -172,7 +173,7 @@ void DisplayAlarmLog(void){
 
     FlashDisplay( ReadFromFlash(1) );
 
-    ST7735_DrawString(1, 14, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+    ST7735_DrawString(1, 13, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 }
 
@@ -183,7 +184,7 @@ void DisplaySpeedLog(void){
 
     FlashDisplay(ReadFromFlash(2));
 
-    ST7735_DrawString(1, 14, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
+    ST7735_DrawString(1, 13, "Press # to exit", ST7735_Color565(0xFF, 0xFF, 0xFF), 1, 0);
 
 }
 
